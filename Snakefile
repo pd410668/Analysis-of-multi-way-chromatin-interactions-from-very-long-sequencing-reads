@@ -27,4 +27,4 @@ rule samtools:
 	output:
 		"data/bam/{sample}.bowtie2.sorted.bam"
 	shell:
-		"samtools view -F 4 -u {input} -o {output}"
+		"samtools view -F 4 -u {input} | samtools sort -o {output}"
