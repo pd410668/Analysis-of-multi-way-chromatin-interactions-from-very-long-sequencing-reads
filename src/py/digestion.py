@@ -13,8 +13,8 @@ import sys
 
 def division(i, seq, positions) -> str:
     if i == len(positions): sub_seq = seq[positions[i-1]:]
-    elif i == 0: sub_seq = seq[:positions[i]]
-    else: sub_seq = seq[positions[i-1]:positions[i]]
+    elif i == 0: sub_seq = seq[:positions[i]+4]
+    else: sub_seq = seq[positions[i-1]:positions[i]+4]
     return sub_seq
 
 def digest(input_reads) -> zip:
@@ -25,8 +25,7 @@ def digest(input_reads) -> zip:
             if positions[0] == 0: positions.pop(0)
             for i in range(0, len(positions)+1):
                 sub_title.append(f"{i}.{title}")
-                if i != len(positions): sub_seq.append(f"{division(i, seq, positions)}GATC")
-                else: sub_seq.append(division(i, seq, positions))
+                sub_seq.append(division(i, seq, positions))
                 sub_qual.append(division(i, qual, positions))
         else:
             sub_title.append(title), sub_seq.append(seq), sub_qual.append(qual)
