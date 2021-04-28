@@ -74,12 +74,21 @@ def main():
 
         lr = l1 + l2
 
-            for i in range(0, len(l1)):
-                for j in range(0, len(l2)):
-                    if equal(l1[i][1], l2[j][1]):
-                        if equal(l1[i][2], l2[j][2]):
-                            if isclose(l1[i][3], l2[j][3], abs_tol=10000):
-                                l1.pop(i)
+        # take all alignment pairs
+        for i in range(len(lr)):
+            for j in range(i + 1, len(lr)):
+                # if two alignments are found on the same chromosome
+                if l1[i][2] == l2[j][2]:
+                    # and their positions are up to 10,000 bp apart
+                    if isclose(l1[i][3], l2[j][3], abs_tol=10000):
+                        if lr[i][1] == "R1" and lr[i][1] == "R1":
+                            stats[0] += 1
+                        if lr[i][1] == "R1" and lr[i][1] == "R2":
+                            stats[1] += 1
+                        if lr[i][1] == "R2" and lr[i][1] == "R1":
+                            stats[2] += 1
+                        if lr[i][1] == "R2" and lr[i][1] == "R2":
+                            stats[3] += 1
 
         # append all the alignments to the final table
         rows.extend(lr)
@@ -90,6 +99,8 @@ def main():
             filtered_rows.append(align)
 
     save_as_table(filtered_rows)
+
+    print(stats)
 
 if __name__ == '__main__':
     main()
