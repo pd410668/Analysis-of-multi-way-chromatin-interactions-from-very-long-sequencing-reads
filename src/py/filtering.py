@@ -9,12 +9,11 @@ import sys
 def parse_bam(inbamfile, read):
     alignments = pysam.AlignmentFile(inbamfile, "rb")
     alignments_list = []
-    strands = ["forward", "reverse"]
     for line in alignments.fetch(until_eof=True):
-        if line.flag == 16:
-            strand = strands[0]
+        if line.is_reverse:
+            strand = "reverse"
         else:
-            strand = strands[1]
+            strand = "forward"
         name = line.qname
         if line.qname[0].isdigit():
             name = line.qname[2:]
