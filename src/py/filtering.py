@@ -74,21 +74,30 @@ def main():
 
         lr = l1 + l2
 
+        def in_proximity(a1, a2):
+            # if two alignments are found on the same chromosome
+            # and their positions are up to 10,000 bp apart
+            return a1[2] == a2[2] and isclose(a1[3], a2[3], abs_tol=10000)                    
+
         # take all alignment pairs
         for i in range(len(lr)):
             for j in range(i + 1, len(lr)):
-                # if two alignments are found on the same chromosome
-                if l1[i][2] == l2[j][2]:
-                    # and their positions are up to 10,000 bp apart
-                    if isclose(l1[i][3], l2[j][3], abs_tol=10000):
-                        if lr[i][1] == "R1" and lr[i][1] == "R1":
-                            stats[0] += 1
-                        if lr[i][1] == "R1" and lr[i][1] == "R2":
-                            stats[1] += 1
-                        if lr[i][1] == "R2" and lr[i][1] == "R1":
-                            stats[2] += 1
-                        if lr[i][1] == "R2" and lr[i][1] == "R2":
-                            stats[3] += 1
+                if in_proximity(lr[i], lr[j])
+                    if lr[i][1] == "R1" and lr[i][1] == "R1":
+                        stats[0] += 1
+                    if lr[i][1] == "R1" and lr[i][1] == "R2":
+                        stats[1] += 1
+                    if lr[i][1] == "R2" and lr[i][1] == "R1":
+                        stats[2] += 1
+                    if lr[i][1] == "R2" and lr[i][1] == "R2":
+                        stats[3] += 1
+
+        # # another idea for statistics to collect:
+        # in_proximity(l1[1], l2[1])
+        # in_proximity(l1[1], l2[-1])
+        # in_proximity(l1[-1], l2[1])
+        # in_proximity(l1[-1], l2[-1])
+
 
         # append all the alignments to the final table
         rows.extend(lr)
