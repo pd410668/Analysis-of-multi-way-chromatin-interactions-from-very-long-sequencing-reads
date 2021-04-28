@@ -71,10 +71,9 @@ def main():
         except StopIteration:
             next2 = None
 
-        if len(l1) == 1 and len(l2) == 1:
-            rows.append(list(l1[0]))
-            rows.append(list(l2[0]))
-        else:
+
+        lr = l1 + l2
+
             for i in range(0, len(l1)):
                 for j in range(0, len(l2)):
                     if equal(l1[i][1], l2[j][1]):
@@ -82,25 +81,8 @@ def main():
                             if isclose(l1[i][3], l2[j][3], abs_tol=10000):
                                 l1.pop(i)
 
-            if len(l1) == 1:
-                rows.append((l1[0]))
-            else:
-                l1_zip = zip(l1, range(0, len(l1)))
-                for i, j in l1_zip:
-                    seqn = f"{i[0]}.{j}"
-                    i = list(i)
-                    i[0] = seqn
-                    rows.append(i)
-
-            if len(l2) == 1:
-                rows.append((l2[0]))
-            else:
-                l2_zip = zip(l2, range(0, len(l2)))
-                for i, j in l2_zip:
-                    seqn = f"{i[0]}.{j}"
-                    i = list(i)
-                    i[0] = seqn
-                    rows.append(i)
+        # append all the alignments to the final table
+        rows.extend(lr)
 
     filtered_rows = []
     for align in rows:
