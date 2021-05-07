@@ -128,7 +128,7 @@ def main():
             filtered_rows.append(align)
 
     save_as_table(filtered_rows)
-    bar_plot(stats)
+    bar_plot(statistics)
     
     # create lists of positions for each chromosome
     chrs = [[] for _ in range(1, 25)]
