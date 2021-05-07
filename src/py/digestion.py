@@ -22,11 +22,13 @@ def digest(input_reads) -> zip:
     for title, seq, qual in input_reads:
         positions = [i for i in range(len(seq)) if seq.startswith("GATC", i)]
         if positions:
-            if positions[0] == 0: positions.pop(0)
-            for i in range(0, len(positions)+1):
-                sub_title.append(f"{i}.{title}")
-                sub_seq.append(division(i, seq, positions))
-                sub_qual.append(division(i, qual, positions))
+            if positions[0] == 0: 
+                positions.pop(0)
+            if positions:
+                for i in range(0, len(positions)+1):
+                    sub_title.append(f"{i}.{title}")
+                    sub_seq.append(division(i, seq, positions))
+                    sub_qual.append(division(i, qual, positions))
         else:
             sub_title.append(title), sub_seq.append(seq), sub_qual.append(qual)
     return zip(sub_title, sub_seq, sub_qual)
