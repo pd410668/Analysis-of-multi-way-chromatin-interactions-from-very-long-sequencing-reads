@@ -33,6 +33,14 @@ def save_as_table(rows):
         outfile = file.write(data)
     return outfile
 
+def bar_plot(data):
+    plt.bar(["R1 vs R1", "R1 vs R2", "R2 vs R1", "R2 vs R2"], data)
+    return plt.savefig("bar_plot.png")
+
+def line_plot(data):
+    plt.plot(data)
+    return plt.savefig("line_plot.png")
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-1", help="input R1 BAM file")
