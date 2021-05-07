@@ -88,17 +88,18 @@ def main():
             return align_1[2] == align_2[2] and isclose(align_1[3], align_1[3], abs_tol=10000)                   
 
         # take all alignment pairs
-        for i in range(len(lr)):
-            for j in range(i + 1, len(lr)):
-                if in_proximity(lr[i], lr[j])
-                    if lr[i][1] == "R1" and lr[i][1] == "R1":
-                        stats[0] += 1
-                    if lr[i][1] == "R1" and lr[i][1] == "R2":
-                        stats[1] += 1
-                    if lr[i][1] == "R2" and lr[i][1] == "R1":
-                        stats[2] += 1
-                    if lr[i][1] == "R2" and lr[i][1] == "R2":
-                        stats[3] += 1
+        statistics = [0, 0, 0, 0]
+        for i in range(len(alignments_list)):
+            for j in range(i + 1, len(alignments_list)):
+                if in_proximity(alignments_list[i], alignments_list[j]):
+                    if alignments_list[i][1] == "R1" and alignments_list[i][1] == "R1":
+                        statistics[0] += 1
+                    if alignments_list[i][1] == "R1" and alignments_list[i][1] == "R2":
+                        statistics[1] += 1
+                    if alignments_list[i][1] == "R2" and alignments_list[i][1] == "R1":
+                        statistics[2] += 1
+                    if alignments_list[i][1] == "R2" and alignments_list[i][1] == "R2":
+                        statistics[3] += 1
        
         if len(align_1) == 1:
             rows.append(list((align_1[0])))
@@ -129,6 +130,7 @@ def main():
     save_as_table(filtered_rows)
     bar_plot(stats)
     
+    # create lists of positions for each chromosome
     chrs = [[] for _ in range(1, 25)]
     for i in range(1, 25):
         for align in all_alignments:
