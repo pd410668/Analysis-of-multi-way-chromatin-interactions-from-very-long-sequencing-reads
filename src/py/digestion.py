@@ -1,29 +1,33 @@
+#!/usr/bin/env python
+
 """
+
 The script is taking as input fastq file. Next the digest function cuts at the point
 of occurrence under the GATC sequence and it returns the digested fastq file.
 Usage:
-chmod 777 digestion.py
 ./digestion.py input.fastq output.fastq
-"""
 
-#!/usr/bin/env python
+"""
 
 from Bio.SeqIO.QualityIO import FastqGeneralIterator
 import sys
 
 def division(i, seq, positions) -> str:
-    if i == len(positions): sub_seq = seq[positions[i-1]:]
-    elif i == 0: sub_seq = seq[:positions[i]+4]
-    else: sub_seq = seq[positions[i-1]:positions[i]+4]
+    if i == len(positions):
+        sub_seq = seq[positions[i-1]:]
+    elif i == 0:
+        sub_seq = seq[:positions[i]+4]
+    else:
+        sub_seq = seq[positions[i-1]:positions[i]+4]
     return sub_seq
 
 def digest(input_reads) -> zip:
     sub_title, sub_seq, sub_qual = [], [], []
     for title, seq, qual in input_reads:
         positions = [i for i in range(len(seq)) if seq.startswith("GATC", i)]
-        if positions:
-            if positions[0] == 0: 
-                positions.pop(0)
+        if positions and positions[0] == 0:
+            positions.pop(0)
+            sub_title.append(title), sub_seq.append(seq), sub_qual.append(qual)
             if positions:
                 for i in range(0, len(positions)+1):
                     sub_title.append(f"{i}.{title}")
