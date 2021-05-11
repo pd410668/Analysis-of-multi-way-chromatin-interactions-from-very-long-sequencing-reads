@@ -3,7 +3,7 @@
 import functions
 import csv
 
-experiment = "hs_k562_I_1_R1"
+experiment = "test"
 
 def read_RvsR_statistics(in_txt_file):
     statistics = []
