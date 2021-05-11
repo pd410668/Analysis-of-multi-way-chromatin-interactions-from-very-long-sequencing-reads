@@ -1,12 +1,12 @@
-SAMPLES=["hs_k562_I_1_R1", "hs_k562_I_1_R2"]
+SAMPLES=["test_R1", "test_R2"]
 
 rule all:
 	input: 
-		expand("data/bam/{sample}.bowtie2.sorted.bam", sample=SAMPLES)
+		expand("data/bam/k562_I/{sample}.bowtie2.bam", sample=SAMPLES) # data/bam/k562_I && II
 
 rule digestion:
 	input:
-		"data/fastq/{sample}.fastq"
+		"data/fastq/k562_I/{sample}.fastq" # data/fastq/k562_I & II & III
 	output:
 		"data/fastq_digested/{sample}.digested.fastq"
 	shell:
@@ -25,6 +25,6 @@ rule samtools:
 	input:
 		"data/sam/{sample}.sam"
 	output:
-		"data/bam/{sample}.bowtie2.sorted.bam"
+		"data/bam/k562_I/{sample}.bowtie2.bam" # data/bam/k562_I & II & III
 	shell:
 		"samtools view -u {input} -o {output}"
