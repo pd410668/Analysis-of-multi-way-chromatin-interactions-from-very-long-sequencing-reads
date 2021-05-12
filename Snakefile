@@ -1,4 +1,4 @@
-SAMPLES=["test_R1", "test_R2"]
+SAMPLES=["hs_k562_I_2_R1", "hs_k562_I_2_R2"]
 
 rule all:
 	input: 
