@@ -12,7 +12,6 @@ def main():
     parser.add_argument("-2", help="input R2 BAM file")
     args = parser.parse_args()
 
-
     args.alignments_R1 = functions.parse_bam(f"{experiment}_R1.bowtie2.bam", 1)
     args.alignments_R2 = functions.parse_bam(f"{experiment}_R2.bowtie2.bam", 2)
 
@@ -66,27 +65,19 @@ def main():
 
         all_alignments = align_1 + align_2
 
-        statistics = [0, 0, 0, 0]
-        distances = [0, 0, 0, 0]
         for i in range(len(all_alignments)):
             for j in range(i + 1, len(all_alignments)):
-                if functions.in_proximity(all_alignments[i], all_alignments[j]):
-                    if all_alignments[i][1] == "R1" and all_alignments[j][1] == "R1":
-                        statistics[0] += 1
-                        distances[0] = abs(all_alignments[i][3] - all_alignments[j][3])
-                    if all_alignments[i][1] == "R1" and all_alignments[j][1] == "R2":
-                        statistics[1] += 1
-                        distances[1] = abs(all_alignments[i][3] - all_alignments[j][3])
-                    if all_alignments[i][1] == "R2" and all_alignments[j][1] == "R1":
-                        statistics[2] += 1
-                        distances[2] = abs(all_alignments[i][3] - all_alignments[j][3])
-                    if all_alignments[i][1] == "R2" and all_alignments[j][1] == "R2":
-                        statistics[3] += 1
-                        distances[3] = abs(all_alignments[i][3] - all_alignments[j][3])
+                if all_alignments[i][2] == all_alignments[j][2]: # same chromosome
+                    statistics = [
+                        all_alignments[i][1],
+                        all_alignments[j][1],
+                        abs(all_alignments[i][3] - all_alignments[j][3]),
+                        all_alignments[i][5],
+                        all_alignments[j][5]
+                    ]
 
-                    # saving supportive txt file to make statistics
-                    functions.collect_statistics(statistics, "RvsR", experiment)
-                    functions.collect_statistics(distances, "distances", experiment)
+                # saving supportive txt file to make statistics
+                functions.collect_statistics(statistics, "RvsR", experiment)
 
     # filtering not mapped alignment and with quality below 30
     # save to the table
