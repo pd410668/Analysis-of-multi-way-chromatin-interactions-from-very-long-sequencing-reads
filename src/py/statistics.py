@@ -3,7 +3,7 @@
 import functions
 import csv
 
-experiment = "test"
+experiment = "hs_k562_I_1_R1"
 
 def read_RvsR_statistics(in_txt_file):
     statistics = []
@@ -49,4 +49,3 @@ functions.line_plot(distances[0], experiment, "R1 vs R1")
 functions.line_plot(distances[1], experiment, "R1 vs R2")
 functions.line_plot(distances[2], experiment, "R2 vs R1")
 functions.line_plot(distances[3], experiment, "R2 vs R2")
-

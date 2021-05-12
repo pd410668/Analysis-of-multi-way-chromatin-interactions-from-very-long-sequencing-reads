@@ -4,11 +4,14 @@ import functions
 import argparse
 
 def main():
-    experiment = "test"
+
+    experiment = "hs_k562_I_1_R1"
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-1", help="input R1 BAM file")
     parser.add_argument("-2", help="input R2 BAM file")
     args = parser.parse_args()
+
 
     args.alignments_R1 = functions.parse_bam(f"{experiment}_R1.bowtie2.bam", 1)
     args.alignments_R2 = functions.parse_bam(f"{experiment}_R2.bowtie2.bam", 2)
@@ -92,4 +95,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
