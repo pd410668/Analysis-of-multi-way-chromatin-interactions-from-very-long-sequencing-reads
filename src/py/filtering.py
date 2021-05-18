@@ -4,6 +4,14 @@ import pysam
 from math import isclose
 import sys
 
+"""
+filtering.py taking as input two bam files R1, R2 and name of experiment
+return statistics_experiment.txt
+usage:
+chmod 777 filtering.py
+./filtering.py experiment_R1.bam experiment_R2.bam experiment_name
+"""
+
 def parse_bam(inbamfile, read):
     """
     :param inbamfile: load two bam files R1 and R2 and name of experimeent
