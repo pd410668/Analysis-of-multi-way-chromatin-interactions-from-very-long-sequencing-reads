@@ -1,8 +1,8 @@
-SAMPLES=["hs_k562_I_2_R1", "hs_k562_I_2_R2"]
+SAMPLES=["hs_k562_I_1_R1", "hs_k562_I_1_R2"]
 
 rule all:
 	input: 
-		expand("data/bam/k562_I/{sample}.bowtie2.bam", sample=SAMPLES) # data/bam/k562_I && II
+		expand("data/test_files/filtering", sample=SAMPLES) # data/bam/k562_I && II
 
 rule digestion:
 	input:
@@ -28,3 +28,20 @@ rule samtools:
 		"data/bam/k562_I/{sample}.bowtie2.bam" # data/bam/k562_I & II & III
 	shell:
 		"samtools view -u {input} -o {output}"
+
+rule filtering:
+	input :
+		R1 = "data/bam/k562_I/{sample}.bowtie2.bam"
+		R2 = "data/bam/k562_I/{sample}.bowtie2.bam"
+	output:
+		"data/supportive_filtering"
+	shell:
+		"src/py/./filtering.py {input.R1} {input.R2}"
+
+rule statistics:
+	input :
+		"data/supportive_filtering/statistics_{sample}.txt"
+	output:
+		"data/test_files/filtering"
+	shell:
+		"src/py/./statistics.py {input}	
