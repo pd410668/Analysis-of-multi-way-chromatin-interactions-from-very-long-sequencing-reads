@@ -10,7 +10,7 @@ rule digestion:
 	output:
 		"data/fastq_digested/{sample}.digested.fastq"
 	shell:
-		"src/py/./digestion.py {input} {output}"
+		"src/py/digestion.py {input} {output}"
 
 rule bowtie2:
 	input:
