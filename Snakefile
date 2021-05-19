@@ -29,20 +29,19 @@ rule samtools:
 	shell:
 		"samtools view -u {input} -o {output}"
 
-# rule filtering:
-# 	input :
-# 		# R1 = "data/bam/k562_I/{sample}.bowtie2.bam",
-# 		# R2 = "data/bam/k562_I/{sample}.bowtie2.bam"
-# 		name = "hs_k562_III_1"
-# 	output:
-# 		"data/supportive_filtering/statistics_{input.name}"
-# 	shell:
-# 		"src/py/./filtering.py {input.name}"
+rule filtering:
+	input :
+		R1 = "data/bam/k562_I/{sample}.bowtie2.bam",
+		R2 = "data/bam/k562_I/{sample}.bowtie2.bam"
+	output:
+		"data/supportive_filtering/statistics_{sample}.txt"
+	shell:
+		"src/py/filtering.py {input.R1} {input.R2} {output}"
 
-# rule statistics:
-# 	input :
-# 		"data/supportive_filtering/statistics_{sample}.txt"
-# 	output:
-# 		"data/test_files/filtering"
-# 	shell:
-# 		"src/py/./statistics.py {input}	
+rule statistics:
+	input:
+		"data/supportive_filtering/statistics_{sample}.txt"
+	output:
+		"analysis/plots/bar_plot_{sample}.png"
+	shell:
+		"src/py/statistics.py {input}"
