@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 
+"""
+statistics.py taking as input tsv file as outfile from filtering.py
+and return bar plot and hist plot
+usage:
+chmod 777 statistics.py
+./statistics.py statistics_experiment.tsv 
+"""
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -22,7 +30,8 @@ def distances_histplot(df, name_experiment):
     return plt.savefig(f"hist_plot_{name_experiment}"), plt.close()
 
 def main():
-    name_experiment = sys.argv[1]
+    experiment = sys.argv[1]
+    name_experiment = experiment[10:-4]
     df = pd.read_csv(f"statistics_{name_experiment}.tsv", sep='\t')
     df.columns = ["seqname", "position", "strand_1", "strand_2", "RvsR"]
 
