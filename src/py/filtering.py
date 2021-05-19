@@ -91,32 +91,28 @@ def main():
         all_alignments = align_1 + align_2
         filtered_alignments = cleaning(all_alignments)
 
-        statistics = []
-        R_counts = [0, 0, 0, 0]
+        # statistics = []
+        # R_counts = [0, 0, 0, 0]
         for i in range(len(filtered_alignments)):
             for j in range(i + 1, len(filtered_alignments)):
-                if in_proximity(filtered_alignments[i], filtered_alignments[j]):
-                    if abs(filtered_alignments[i][3] - filtered_alignments[j][3]) != 0:
-                        if all_alignments[i][1] == "R1" and all_alignments[j][1] == "R1":
-                            R_counts[0] += 1
-                        if all_alignments[i][1] == "R1" and all_alignments[j][1] == "R2":
-                            R_counts[1] += 1
-                        if all_alignments[i][1] == "R2" and all_alignments[j][1] == "R1":
-                            R_counts[2] += 1
-                        if all_alignments[i][1] == "R2" and all_alignments[j][1] == "R2":
-                            R_counts[3] += 1
-                        for match in R_counts:
-                            if match != 0:
-                                statistics = [
-                                    filtered_alignments[i][0],
-                                    abs(filtered_alignments[i][3] - filtered_alignments[j][3]),
-                                    filtered_alignments[i][5],
-                                    filtered_alignments[j][5],
-                                    f"{filtered_alignments[i][1]} vs {filtered_alignments[j][1]}",
-                                    match
-                                ]
+                # if in_proximity(filtered_alignments[i], filtered_alignments[j]):
+                # if all_alignments[i][1] == "R1" and all_alignments[j][1] == "R1":
+                #     R_counts[0] += 1
+                # if all_alignments[i][1] == "R1" and all_alignments[j][1] == "R2":
+                #     R_counts[1] += 1
+                # if all_alignments[i][1] == "R2" and all_alignments[j][1] == "R1":
+                #     R_counts[2] += 1
+                # if all_alignments[i][1] == "R2" and all_alignments[j][1] == "R2":
+                #     R_counts[3] += 1
 
-                        collect_statistics(statistics, experiment)
+                statistics = [
+                    filtered_alignments[i][0],
+                    abs(filtered_alignments[i][3] - filtered_alignments[j][3]),
+                    filtered_alignments[i][5],
+                    filtered_alignments[j][5],
+                    f"{filtered_alignments[i][1]} vs {filtered_alignments[j][1]}"
+                ]
+                collect_statistics(statistics, experiment)
 
 if __name__ == '__main__':
     main()
