@@ -1,15 +1,15 @@
 #!/usr/bin/env python
-
-import pysam
 from math import isclose
+import pysam
 import sys
+import csv
 
 """
-filtering.py taking as input two bam files R1, R2 and name of 
-return statistics_experiment.txt
+filtering.py taking as input two bam files R1, R2
+and return statistics_experiment.tsv
 usage:
 chmod 777 filtering.py
-./filtering.py experiment_name
+./filtering.py experiment.R1 experiment.R2
 """
 
 def parse_bam(inbamfile, read):
@@ -43,24 +43,19 @@ def cleaning(alignments):
             filtered_alignments.append(align)
     return filtered_alignments
 
-def in_proximity(align_1, align_2):
-    # if two alignments are found on the same chromosome
-    # and their positions are up to 1,000 bp apart
-    return align_1[2] == align_2[2] and isclose(align_1[3], align_1[3], abs_tol=1000)
-
-def collect_statistics(statistics, name):
-    # saving supportive txt file to make statistics
-    writer = open(f"statistics_{name}.txt", "a")
-    outfile = writer.write((str(statistics) + "\n"))
-    return outfile
+def collect_statistics(data):
+    # saving supportive tsv file to make statistics
+    titles = ["seqname", "position", "strand_1", "strand_2", "RvsR"]
+    with open("statistics.tsv", "a", newline='') as outfile:
+        tsv_output = csv.writer(outfile, delimiter='\t')
+        tsv_output.writerow(data)
 
 def main():
-    experiment = sys.argv[1]
-#     experiment_R2 = sys.argv[2]
-#     name_experiment = sys.argv[3]
+    experiment_R1 = sys.argv[1]
+    experiment_R2 = sys.argv[2]
 
-    alignments_R1 = parse_bam(f"{experiment}_R1.bowtie2.bam", 1)
-    alignments_R2 = parse_bam(f"{experiment}_R2.bowtie2.bam", 2)
+    alignments_R1 = parse_bam(f"{experiment_R1}.bowtie2.bam", 1)
+    alignments_R2 = parse_bam(f"{experiment_R2}.bowtie2.bam", 2)
 
     iter_1 = iter(alignments_R1)
     iter_2 = iter(alignments_R2)
@@ -91,29 +86,17 @@ def main():
         all_alignments = align_1 + align_2
         filtered_alignments = cleaning(all_alignments)
 
-        # statistics = []
-        # R_counts = [0, 0, 0, 0]
         for i in range(len(filtered_alignments)):
             for j in range(i + 1, len(filtered_alignments)):
-                # if in_proximity(filtered_alignments[i], filtered_alignments[j]):
-                # if all_alignments[i][1] == "R1" and all_alignments[j][1] == "R1":
-                #     R_counts[0] += 1
-                # if all_alignments[i][1] == "R1" and all_alignments[j][1] == "R2":
-                #     R_counts[1] += 1
-                # if all_alignments[i][1] == "R2" and all_alignments[j][1] == "R1":
-                #     R_counts[2] += 1
-                # if all_alignments[i][1] == "R2" and all_alignments[j][1] == "R2":
-                #     R_counts[3] += 1
-
-                statistics = [
-                    filtered_alignments[i][0],
-                    abs(filtered_alignments[i][3] - filtered_alignments[j][3]),
-                    filtered_alignments[i][5],
-                    filtered_alignments[j][5],
-                    f"{filtered_alignments[i][1]} vs {filtered_alignments[j][1]}"
-                ]
-                collect_statistics(statistics, experiment)
+                if abs(filtered_alignments[i][3] - filtered_alignments[j][3]) != 0:
+                    statistics = [
+                        filtered_alignments[i][0],
+                        abs(filtered_alignments[i][3] - filtered_alignments[j][3]),
+                        filtered_alignments[i][5],
+                        filtered_alignments[j][5],
+                        f"{filtered_alignments[i][1]} vs {filtered_alignments[j][1]}"
+                    ]
+                    collect_statistics(statistics)
 
 if __name__ == '__main__':
     main()
-
