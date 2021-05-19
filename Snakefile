@@ -1,12 +1,12 @@
-SAMPLES=["hs_k562_III_1_R1", "hs_k562_III_1_R2"]
+SAMPLES=["hs_k562_I_1_R1", "hs_k562_I_1_R2"]
 
 rule all:
 	input: 
-		expand("analysis/plots/distance_hist_{sample}.png", sample=SAMPLES) # data/bam/k562_I && II
+		expand("data/supportive_filtering/statistics_{sample}.tsv", sample=SAMPLES) # data/bam/k562_I && II
 
 rule digestion:
 	input:
-		"data/fastq/k562_III/{sample}.fastq" # data/fastq/k562_I & II & III
+		"data/fastq/k562_I/{sample}.fastq" # data/fastq/k562_I & II & III
 	output:
 		"data/fastq_digested/{sample}.digested.fastq"
 	shell:
@@ -25,24 +25,24 @@ rule samtools:
 	input:
 		"data/sam/{sample}.sam"
 	output:
-		"data/bam/k562_III/{sample}.bowtie2.bam" # data/bam/k562_I & II & III
+		"data/bam/k562_I/{sample}.bowtie2.bam" # data/bam/k562_I & II & III
 	shell:
 		"samtools view -u {input} -o {output}"
 
 rule filtering:
 	input:
-		R1 = "data/bam/k562_I/{sample}.bowtie2.bam",
+		R1 = "data/bam/k562_I/{sample}.bowtie2.bam", # data/bam/k562_I & II & III
 		R2 = "data/bam/k562_I/{sample}.bowtie2.bam"
 	output:
-		"data/supportive_filtering/statistics_{sample}.txt"
+		"data/supportive_filtering/statistics_{sample}.tsv"
 	shell:
 		"src/py/filtering.py {input.R1} {input.R2} {output}"
 
-rule statistics:
-	input:
-		"data/supportive_filtering/statistics_{sample}.txt"
-	output:
-		"analysis/plots/distance_hist_{sample}.png",
-		"analysis/plots/RvsR_hist_{sample}.png"
-	shell:
-		"src/py/statistics.py {input}"
+# rule statistics:
+# 	input:
+# 		"data/supportive_filtering/statistics_{sample}.txt"
+# 	output:
+# 		"analysis/plots/distance_hist_plot_{sample}.png",
+# 		"analysis/plots/RvsR_bar_plot_{sample}.png"
+# 	shell:
+# 		"src/py/statistics.py {input}"
