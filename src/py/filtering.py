@@ -5,11 +5,11 @@ from math import isclose
 import sys
 
 """
-filtering.py taking as input two bam files R1, R2 and name of experiment
+filtering.py taking as input two bam files R1, R2 and name of 
 return statistics_experiment.txt
 usage:
 chmod 777 filtering.py
-./filtering.py experiment_R1.bam experiment_R2.bam experiment_name
+./filtering.py experiment_name
 """
 
 def parse_bam(inbamfile, read):
@@ -55,12 +55,12 @@ def collect_statistics(statistics, name):
     return outfile
 
 def main():
-    experiment_R1 = sys.argv[1]
-    experiment_R2 = sys.argv[2]
-    name_experiment = sys.argv[3]
+    experiment = sys.argv[1]
+#     experiment_R2 = sys.argv[2]
+#     name_experiment = sys.argv[3]
 
-    alignments_R1 = parse_bam(f"{experiment_R1}.bowtie2.bam", 1)
-    alignments_R2 = parse_bam(f"{experiment_R2}.bowtie2.bam", 2)
+    alignments_R1 = parse_bam(f"{experiment}_R1.bowtie2.bam", 1)
+    alignments_R2 = parse_bam(f"{experiment}_R2.bowtie2.bam", 2)
 
     iter_1 = iter(alignments_R1)
     iter_2 = iter(alignments_R2)
@@ -116,7 +116,7 @@ def main():
                                     match
                                 ]
 
-                        collect_statistics(statistics, name_experiment)
+                        collect_statistics(statistics, experiment)
 
 if __name__ == '__main__':
     main()
