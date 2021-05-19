@@ -1,12 +1,12 @@
-SAMPLES=["hs_k562_I_2_R1", "hs_k562_I_2_R2"]
+SAMPLES=["hs_k562_III_1_R1", "hs_k562_III_1_R2"]
 
 rule all:
 	input: 
-		expand("data/bam/k562_I/{sample}.bowtie2.bam", sample=SAMPLES) # data/bam/k562_I && II
+		expand("data/bam/k562_III/{sample}.bowtie2.bam", sample=SAMPLES) # data/bam/k562_I && II
 
 rule digestion:
 	input:
-		"data/fastq/{sample}.fastq" # data/fastq/k562_I & II & III
+		"data/fastq/k562_III/{sample}.fastq" # data/fastq/k562_I & II & III
 	output:
 		"data/fastq_digested/{sample}.digested.fastq"
 	shell:
@@ -25,19 +25,19 @@ rule samtools:
 	input:
 		"data/sam/{sample}.sam"
 	output:
-		"data/bam/k562_I/{sample}.bowtie2.bam" # data/bam/k562_I & II & III
+		"data/bam/k562_III/{sample}.bowtie2.bam" # data/bam/k562_I & II & III
 	shell:
 		"samtools view -u {input} -o {output}"
 
-rule filtering:
-	input :
-		# R1 = "data/bam/k562_I/{sample}.bowtie2.bam",
-		# R2 = "data/bam/k562_I/{sample}.bowtie2.bam"
-		"hs_k562_I_2"
-	output:
-		"data/supportive_filtering/{sample}"
-	shell:
-		"src/py/./filtering.py {input}"
+# rule filtering:
+# 	input :
+# 		# R1 = "data/bam/k562_I/{sample}.bowtie2.bam",
+# 		# R2 = "data/bam/k562_I/{sample}.bowtie2.bam"
+# 		name = "hs_k562_III_1"
+# 	output:
+# 		"data/supportive_filtering/statistics_{input.name}"
+# 	shell:
+# 		"src/py/./filtering.py {input.name}"
 
 # rule statistics:
 # 	input :
