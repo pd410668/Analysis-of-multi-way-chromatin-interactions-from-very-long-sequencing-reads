@@ -54,8 +54,8 @@ def main():
     experiment_R1 = sys.argv[1]
     experiment_R2 = sys.argv[2]
 
-    alignments_R1 = parse_bam(f"{experiment_R1}.bowtie2.bam", 1)
-    alignments_R2 = parse_bam(f"{experiment_R2}.bowtie2.bam", 2)
+    alignments_R1 = parse_bam(f"{experiment_R1}", 1)
+    alignments_R2 = parse_bam(f"{experiment_R2}", 2)
 
     iter_1 = iter(alignments_R1)
     iter_2 = iter(alignments_R2)
