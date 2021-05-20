@@ -45,7 +45,7 @@ def cleaning(alignments):
 
 def collect_statistics(data):
     # saving supportive tsv file to make statistics
-    titles = ["seqname", "position", "strand_1", "strand_2", "RvsR"]
+    
     with open("statistics.tsv", "a", newline='') as outfile:
         tsv_output = csv.writer(outfile, delimiter='\t')
         tsv_output.writerow(data)

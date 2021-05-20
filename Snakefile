@@ -32,7 +32,7 @@ rule samtools:
 rule filtering:
 	input:
 		R1 = "data/bam/k562_I/{sample}.bowtie2.bam", # data/bam/k562_I & II & III
-		R2 = "data/bam/k562_I/{sample}.bowtie2.bam"
+		R2 = "data/bam/k562_I/{sample}.bowtie2.bam" 
 	output:
 		"data/supportive_filtering/statistics_{sample}.tsv"
 	shell:
