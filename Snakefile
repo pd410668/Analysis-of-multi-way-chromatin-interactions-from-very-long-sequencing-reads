@@ -1,12 +1,15 @@
-SAMPLES=["hs_k562_I_1_R1", "hs_k562_I_1_R2"]
+# experiment on k562 human cells
+
+SAMPLES=["hs_k562_I_1_R1", "hs_k562_I_1_R2"] 
+RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
 
 rule all:
 	input: 
-		expand("data/supportive_filtering/statistics_{sample}.tsv", sample=SAMPLES) # data/bam/k562_I && II
+		expand("data/supportive_filtering/statistics_{res}.tsv", res=RES)
 
 rule digestion:
 	input:
-		"data/fastq/k562_I/{sample}.fastq" # data/fastq/k562_I & II & III
+		"data/fastq/k562/{sample}.fastq"
 	output:
 		"data/fastq_digested/{sample}.digested.fastq"
 	shell:
@@ -25,18 +28,17 @@ rule samtools:
 	input:
 		"data/sam/{sample}.sam"
 	output:
-		"data/bam/k562_I/{sample}.bowtie2.bam" # data/bam/k562_I & II & III
+		"data/bam/{sample}.bowtie2.bam"
 	shell:
 		"samtools view -u {input} -o {output}"
 
 rule filtering:
 	input:
-		R1 = "data/bam/k562_I/{sample}.bowtie2.bam", # data/bam/k562_I & II & III
-		R2 = "data/bam/k562_I/{sample}.bowtie2.bam" 
+		expand("data/bam/{sample}.bowtie2.bam", sample=SAMPLES)
 	output:
-		"data/supportive_filtering/statistics_{sample}.tsv"
+		"data/supportive_filtering/statistics_{res}.tsv"
 	shell:
-		"src/py/filtering.py {input.R1} {input.R2} {output}"
+		"src/py/filtering.py {input} {output}"
 
 # rule statistics:
 # 	input:
