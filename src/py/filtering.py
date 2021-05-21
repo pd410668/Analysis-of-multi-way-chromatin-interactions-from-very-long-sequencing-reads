@@ -43,16 +43,16 @@ def cleaning(alignments):
             filtered_alignments.append(align)
     return filtered_alignments
 
-def collect_statistics(data):
+def collect_statistics(data, name):
     # saving supportive tsv file to make statistics
-    
-    with open("statistics.tsv", "a", newline='') as outfile:
+    with open(f"{name}", "a", newline='') as outfile:
         tsv_output = csv.writer(outfile, delimiter='\t')
         tsv_output.writerow(data)
 
 def main():
     experiment_R1 = sys.argv[1]
     experiment_R2 = sys.argv[2]
+    experiment_name = sys.argv[3]
 
     alignments_R1 = parse_bam(f"{experiment_R1}", 1)
     alignments_R2 = parse_bam(f"{experiment_R2}", 2)
@@ -96,7 +96,7 @@ def main():
                         filtered_alignments[j][5],
                         f"{filtered_alignments[i][1]} vs {filtered_alignments[j][1]}"
                     ]
-                    collect_statistics(statistics)
+                    collect_statistics(statistics, experiment_name)
 
 if __name__ == '__main__':
     main()
