@@ -13,30 +13,32 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import sys
 
-def RvsR_barplot(df, name_experiment):
+def RvsR_barplot(df, name):
     sns.set(rc={'figure.figsize': (8, 6)})
     sns.set_style("whitegrid")
     ax = sns.barplot(x=df["RvsR"].value_counts().index, y=df["RvsR"].value_counts(), color="royalblue")
-    ax.set(xlabel="Combinations", ylabel="number of matches", title=f"Sample from {name_experiment} human cells")
-    return plt.savefig(f"bar_plot_{name_experiment}"), plt.close()
+    ax.set(xlabel="Combinations", ylabel="number of matches", title=f"Sample from {name} human cells")
+    return plt.savefig(f"RvsR_{name}.png"), plt.close()
 
-def distances_histplot(df, name_experiment):
+def distances_histplot(df, name):
     distances = df["position"]
-    comparisions = df.reset_index(level=0, inplace=True)
+    df.reset_index(level=0, inplace=True)
+    comparisions = df["index"]
     sns.set(rc={'figure.figsize': (8, 6)})
     sns.set_style("whitegrid")
-    ax = sns.histplot(data=df, y=comparisions, x=distances, color="royalblue")
-    ax.set(xlabel="Position", ylabel="Number of comparisons", title=f"Sample from {name_experiment} human cells")
-    return plt.savefig(f"hist_plot_{name_experiment}"), plt.close()
+    ax = sns.histplot(data=df, y=comparisions, x=distances, color="darkblue")
+    ax.set(xlabel="Position", ylabel="Number of comparisons", title=f"Sample from {name} human cells")
+    return plt.savefig(f"distances_{name}.png"), plt.close()
 
 def main():
-    experiment = sys.argv[1]
-    name_experiment = experiment[10:-4]
-    df = pd.read_csv(f"statistics_{name_experiment}.tsv", sep='\t')
+    input = sys.argv[1]
+    name = sys.argv[1][37:-4]
+
+    df = pd.read_csv(sys.argv[1], sep='\t')
     df.columns = ["seqname", "position", "strand_1", "strand_2", "RvsR"]
 
-    RvsR_barplot(df, name_experiment)
-    distances_histplot(df, name_experiment)
+    RvsR_barplot(df, name)
+    distances_histplot(df, name)
 
 if __name__ == '__main__':
     main()
