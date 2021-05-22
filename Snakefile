@@ -5,7 +5,8 @@ RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
 
 rule all:
 	input: 
-		expand("data/supportive_filtering/statistics_{res}.tsv", res=RES)
+		expand("data/analysis/plots/distances_{res}.png", res=RES),
+		expand("data/analysis/plots/RvsR_{res}.png", res=RES)
 
 rule digestion:
 	input:
@@ -40,11 +41,11 @@ rule filtering:
 	shell:
 		"src/py/filtering.py {input} {output}"
 
-# rule statistics:
-# 	input:
-# 		"data/supportive_filtering/statistics_{sample}.txt"
-# 	output:
-# 		"analysis/plots/distance_hist_plot_{sample}.png",
-# 		"analysis/plots/RvsR_bar_plot_{sample}.png"
-# 	shell:
-# 		"src/py/statistics.py {input}"
+rule statistics:
+	input:
+		"data/supportive_filtering/statistics_{res}.tsv"
+	output:
+		"data/analysis/plots/distances_{res}.png", 
+		"data/analysis/plots/RvsR_{res}.png"
+	shell:
+		"src/py/statistics.py {input}"
