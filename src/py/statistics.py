@@ -18,7 +18,7 @@ def RvsR_barplot(df, name):
     sns.set_style("whitegrid")
     ax = sns.barplot(x=df["RvsR"].value_counts().index, y=df["RvsR"].value_counts(), color="royalblue")
     ax.set(xlabel="Combinations", ylabel="number of matches", title=f"Sample from {name} human cells")
-    return plt.savefig(f"RvsR_{name}.png"), plt.close()
+    return plt.savefig(f"{sys.argv[2]}"), plt.close()
 
 def distances_histplot(df, name):
     distances = df["position"]
@@ -26,17 +26,18 @@ def distances_histplot(df, name):
     comparisions = df["index"]
     sns.set(rc={'figure.figsize': (8, 6)})
     sns.set_style("whitegrid")
-    ax = sns.histplot(data=df, y=comparisions, x=distances, color="darkblue")
+    ax = sns.histplot(data=df, y=comparisions, x=distances, color="red")
     ax.set(xlabel="Position", ylabel="Number of comparisons", title=f"Sample from {name} human cells")
-    return plt.savefig(f"distances_{name}.png"), plt.close()
+    return plt.savefig(f"{sys.argv[3]}"), plt.close()
 
 def main():
     name = sys.argv[1][37:-4]
+
     df = pd.read_csv(sys.argv[1], sep='\t')
     df.columns = ["seqname", "position", "strand_1", "strand_2", "RvsR"]
 
-    RvsR_barplot(df, name)
     distances_histplot(df, name)
+    RvsR_barplot(df, name)
 
 if __name__ == '__main__':
     main()
