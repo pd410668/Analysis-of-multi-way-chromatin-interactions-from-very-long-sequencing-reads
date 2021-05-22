@@ -31,9 +31,7 @@ def distances_histplot(df, name):
     return plt.savefig(f"distances_{name}.png"), plt.close()
 
 def main():
-    input = sys.argv[1]
     name = sys.argv[1][37:-4]
-
     df = pd.read_csv(sys.argv[1], sep='\t')
     df.columns = ["seqname", "position", "strand_1", "strand_2", "RvsR"]
 
