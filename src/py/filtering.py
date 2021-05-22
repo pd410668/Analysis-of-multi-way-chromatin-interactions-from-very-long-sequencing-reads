@@ -88,15 +88,16 @@ def main():
 
         for i in range(len(filtered_alignments)):
             for j in range(i + 1, len(filtered_alignments)):
-                if abs(filtered_alignments[i][3] - filtered_alignments[j][3]) != 0:
-                    statistics = [
-                        filtered_alignments[i][0],
-                        abs(filtered_alignments[i][3] - filtered_alignments[j][3]),
-                        filtered_alignments[i][5],
-                        filtered_alignments[j][5],
-                        f"{filtered_alignments[i][1]} vs {filtered_alignments[j][1]}"
-                    ]
-                    collect_statistics(statistics, experiment_name)
+               # absolute = abs(filtered_alignments[i][3] - filtered_alignments[j][3])
+	       # if absolute <= 100 and absolute != 0:
+                statistics = [
+                    filtered_alignments[i][0],
+                    abs(filtered_alignments[i][3] - filtered_alignments[j][3]),
+                    filtered_alignments[i][5],
+                    filtered_alignments[j][5],
+                    f"{filtered_alignments[i][1]} vs {filtered_alignments[j][1]}"
+                ]
+                collect_statistics(statistics, experiment_name)
 
 if __name__ == '__main__':
     main()
