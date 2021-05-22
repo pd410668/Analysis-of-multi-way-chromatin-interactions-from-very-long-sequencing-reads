@@ -1,6 +1,6 @@
 # experiment on k562 human cells
 
-SAMPLES=["hs_k562_II_1_R1", "hs_k562_II_1_R2"] 
+SAMPLES=["hs_k562_III_1_R1", "hs_k562_III_1_R2"] 
 RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
 
 rule all:
@@ -48,4 +48,4 @@ rule statistics:
 		dist = "data/analysis/plots/distances_{res}.png", 
 		RvsR = "data/analysis/plots/RvsR_{res}.png"
 	shell:
-		"src/py/statistics.py {input} {output.RvsR} {output.dist}"
+		"src/py/statistics.py {input} {output.dist} {output.RvsR}"
