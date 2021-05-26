@@ -1,23 +1,19 @@
 #!/usr/bin/env python
-from math import isclose
+
 import pysam
 import sys
 import csv
 
 """
 filtering.py taking as input two bam files R1, R2
-and return statistics_experiment.tsv
-usage:
+and return experimen_name.tsv file
+usage: 
 chmod 777 filtering.py
 ./filtering.py experiment.R1 experiment.R2
 """
 
 def parse_bam(inbamfile, read):
-    """
-    :param inbamfile: load two bam files R1 and R2 and name of experimeent
-    :param read: number of read
-    :return: list od tuples
-    """
+    # load bam file and create list of tuples
     alignments = pysam.AlignmentFile(inbamfile, "rb")
     alignments_list = []
     for line in alignments.fetch(until_eof=True):
@@ -43,17 +39,21 @@ def cleaning(alignments):
             filtered_alignments.append(align)
     return filtered_alignments
 
-def collect_statistics(data, name):
+def collect_statistics(data, experiment_name, WvsA):
     # saving supportive tsv file to make statistics
-    with open(f"{name}", "a", newline='') as outfile:
+    with open(f"{experiment_name}.tsv", WvsA, newline='') as outfile:
         tsv_output = csv.writer(outfile, delimiter='\t')
         tsv_output.writerow(data)
 
-def main():
-    experiment_R1 = sys.argv[1]
-    experiment_R2 = sys.argv[2]
-    experiment_name = sys.argv[3]
+# initiation of basic dependencies
+experiment_R1 = "hs_k562_I_1_R1.bowtie2.bam"  # sys.argv[1]
+experiment_R2 = "hs_k562_I_1_R2.bowtie2.bam"  # sys.argv[2]
+experiment_name = experiment_R1[:-15]
 
+fieldnames = ["seqname", "chr_R1", "pos_R1", "strand_R1", "chr_R2", "pos_R2", "strand_R1", "RvsR"]
+collect_statistics(fieldnames, experiment_name, "w")
+
+def main():
     alignments_R1 = parse_bam(f"{experiment_R1}", 1)
     alignments_R2 = parse_bam(f"{experiment_R2}", 2)
 
@@ -88,20 +88,18 @@ def main():
 
         for i in range(len(filtered_alignments)):
             for j in range(i + 1, len(filtered_alignments)):
-               # absolute = abs(filtered_alignments[i][3] - filtered_alignments[j][3])
-	       # if absolute <= 100 and absolute != 0:
-                statistics = [
-                    filtered_alignments[i][0],
-                    filtered_alignments[i][2], # chromosome 1
-                    filtered_alignments[i][3], # position 1
-                    filtered_alignments[i][5], # strand 1
-                    filtered_alignments[j][2], # chromosome 2
-                    filtered_alignments[j][3], # position 2
-                    filtered_alignments[j][5], # strand 2
-                    f"{filtered_alignments[i][1]} vs {filtered_alignments[j][1]}"
-                ]
-                # FIXME add column names in the first row
-                collect_statistics(statistics, experiment_name)
+                if filtered_alignments[i][2] == filtered_alignments[j][2]:
+                    statistics = [
+                        filtered_alignments[i][0],
+                        filtered_alignments[i][2],  # chromosome R1
+                        filtered_alignments[i][3],  # position R1
+                        filtered_alignments[i][5],  # strand R1
+                        filtered_alignments[j][2],  # chromosome R2
+                        filtered_alignments[j][3],  # position R2
+                        filtered_alignments[j][5],  # strand R2
+                        f"{filtered_alignments[i][1]} vs {filtered_alignments[j][1]}"
+                    ]
+                    collect_statistics(statistics, experiment_name, "a")
 
 if __name__ == '__main__':
     main()
