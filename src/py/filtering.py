@@ -48,7 +48,7 @@ def collect_statistics(data, experiment_name, WvsA):
 # initiation of basic dependencies
 experiment_R1 = sys.argv[1]
 experiment_R2 = sys.argv[2]
-experiment_name = experiment_R1[:-15]
+experiment_name = sys.argv[3]
 
 fieldnames = ["seqname", "chr_R1", "pos_R1", "strand_R1", "chr_R2", "pos_R2", "strand_R1", "RvsR"]
 collect_statistics(fieldnames, experiment_name, "w")
