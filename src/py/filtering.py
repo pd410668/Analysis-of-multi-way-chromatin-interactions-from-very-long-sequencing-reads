@@ -92,11 +92,15 @@ def main():
 	       # if absolute <= 100 and absolute != 0:
                 statistics = [
                     filtered_alignments[i][0],
-                    abs(filtered_alignments[i][3] - filtered_alignments[j][3]),
-                    filtered_alignments[i][5],
-                    filtered_alignments[j][5],
+                    filtered_alignments[i][2], # chromosome 1
+                    filtered_alignments[i][3], # position 1
+                    filtered_alignments[i][5], # strand 1
+                    filtered_alignments[j][2], # chromosome 2
+                    filtered_alignments[j][3], # position 2
+                    filtered_alignments[j][5], # strand 2
                     f"{filtered_alignments[i][1]} vs {filtered_alignments[j][1]}"
                 ]
+                # FIXME add column names in the first row
                 collect_statistics(statistics, experiment_name)
 
 if __name__ == '__main__':
