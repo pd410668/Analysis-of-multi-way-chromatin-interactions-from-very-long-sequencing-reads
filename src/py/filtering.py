@@ -46,8 +46,8 @@ def collect_statistics(data, experiment_name, WvsA):
         tsv_output.writerow(data)
 
 # initiation of basic dependencies
-experiment_R1 = "hs_k562_I_1_R1.bowtie2.bam"  # sys.argv[1]
-experiment_R2 = "hs_k562_I_1_R2.bowtie2.bam"  # sys.argv[2]
+experiment_R1 = sys.argv[1]
+experiment_R2 = sys.argv[2]
 experiment_name = experiment_R1[:-15]
 
 fieldnames = ["seqname", "chr_R1", "pos_R1", "strand_R1", "chr_R2", "pos_R2", "strand_R1", "RvsR"]
