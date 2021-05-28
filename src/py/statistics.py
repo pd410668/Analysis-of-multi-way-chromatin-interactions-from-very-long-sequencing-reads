@@ -67,7 +67,7 @@ def main():
 
 
     df = pd.read_csv(sys.argv[1], sep='\t')
-    experiment_name = sys.argv[1][:-4]
+    experiment_name = sys.argv[1][26:-4]
 
     # Initiation basic dependencies
     df_RvsR = {x: y for x, y in df.groupby("RvsR")}
