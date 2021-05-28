@@ -5,39 +5,77 @@ statistics.py taking as input tsv file as outfile from filtering.py
 and return bar plot and hist plot
 usage:
 chmod 777 statistics.py
-./statistics.py statistics_experiment.tsv 
+./statistics.py statistics_experiment.tsv histplots_name barplot_name
 """
 
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import sys
-
-def RvsR_barplot(df, name):
-    sns.set(rc={'figure.figsize': (8, 6)})
-    sns.set_style("whitegrid")
-    ax = sns.barplot(x=df["RvsR"].value_counts().index, y=df["RvsR"].value_counts(), color="royalblue")
-    ax.set(xlabel="Combinations", ylabel="number of matches", title=f"Sample from {name} human cells")
-    return plt.savefig(f"{sys.argv[3]}"), plt.close()
-
-def distances_histplot(df, name):
-    distances = df["position"]
-    df.reset_index(level=0, inplace=True)
-    comparisions = df["index"]
-    sns.set(rc={'figure.figsize': (8, 6)})
-    sns.set_style("whitegrid")
-    ax = sns.histplot(data=df, y=comparisions, x=distances, color="red")
-    ax.set(xlabel="Position", ylabel="Number of comparisons", title=f"Sample from {name} human cells")
-    return plt.savefig(f"{sys.argv[2]}"), plt.close()
+import matplotlib.ticker as ticker
 
 def main():
-    name = sys.argv[1][37:-4]
+    def distancess_histplot(df, experiment_name):
+        sns.set_style("whitegrid")
+        fig, ax = plt.subplots(2, 2, sharex=True, figsize=(16, 12))
+        plt.subplots_adjust(bottom=0.1, top=0.9, hspace=0.18, wspace=0.1, right=0.93, left=0.15)
+
+        if "R1 vs R1" in RvsR_keys:
+            R1vsR1 = df["R1 vs R1"].reset_index(drop=True)
+            sns.histplot(ax=ax[0, 0], data=df, x=R1vsR1["abs_pos"], color="red", edgecolor="black")
+        else:
+            fig.delaxes(ax[0, 0])
+
+        if "R2 vs R2" in RvsR_keys:
+            R2vsR2 = df["R2 vs R2"].reset_index(drop=True)
+            sns.histplot(ax=ax[0, 1], data=df, x=R2vsR2["abs_pos"], color="red", edgecolor="black")
+        else:
+            fig.delaxes(ax[0, 1])
+
+        if "R1 vs R2" in RvsR_keys:
+            R1vsR2 = df["R1 vs R2"].reset_index(drop=True)
+            sns.histplot(ax=ax[1, 0], data=df, x=R1vsR2["abs_pos"], color="red", edgecolor="black")
+            ax[1, 0].yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{:,.0f}".format(x/1000) + 'K'))
+        else:
+            fig.delaxes(ax[1, 0])
+
+        if "R2 vs R1" in RvsR_keys:
+            R2vsR1 = df["R2 vs R1"].reset_index(drop=True)
+            sns.histplot(ax=ax[1, 1], data=df, x=R2vsR1["abs_pos"], color="red", edgecolor="black")
+        else:
+            fig.delaxes(ax[1, 1])
+
+        ax[0, 0].set_title("R1 vs R1", fontsize=18)
+        ax[0, 1].set_title("R2 vs R2", fontsize=18)
+        ax[1, 0].set_title("R1 vs R2", fontsize=18)
+        ax[1, 1].set_title("R2 vs R1", fontsize=18)
+
+        fig.suptitle(f"Sample from {experiment_name} human cells", fontsize=20)
+        for ax in ax.flat:
+            ax.set_xlabel("Absolute value comparing each two aligns", fontsize=18)
+            ax.set_ylabel("Number of compared aligns", fontsize=18)
+            ax.label_outer()
+        return plt.savefig(f"{sys.argv[2]}"), plt.close()
+
+    def RvsR_barplot(df, experiment_name):
+        sns.set(rc={'figure.figsize': (8, 6)})
+        sns.set_style("whitegrid")
+        ax = sns.barplot(x=df["RvsR"].value_counts().index, y=df["RvsR"].value_counts(), color="royalblue", edgecolor="black")
+        ax.set(xlabel="Combinations", ylabel="number of matches", title=f"Sample from {experiment_name} human cells")
+        ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{:,.0f}".format(x / 1000) + 'K'))
+        return plt.savefig(f"{sys.argv[3]}"), plt.close()
+
 
     df = pd.read_csv(sys.argv[1], sep='\t')
-    df.columns = ["seqname", "position", "strand_1", "strand_2", "RvsR"]
+    experiment_name = sys.argv[1][:-4]
 
-    distances_histplot(df, name)
-    RvsR_barplot(df, name)
+    # Initiation basic dependencies
+    df_RvsR = {x: y for x, y in df.groupby("RvsR")}
+    RvsR_keys = list(df_RvsR.keys())
+
+    # Plotting
+    RvsR_barplot(df, experiment_name)
+    distancess_histplot(df_RvsR, experiment_name)
 
 if __name__ == '__main__':
     main()
