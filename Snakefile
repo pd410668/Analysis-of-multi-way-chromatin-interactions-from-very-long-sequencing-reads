@@ -1,6 +1,6 @@
 # experiment on k562 human cells
 
-SAMPLES=["hs_k562_III_1_R1", "hs_k562_III_1_R2"] 
+SAMPLES=["hs_k562_I_1_R1", "hs_k562_I_1_R2"] 
 RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
 
 rule all:
@@ -18,8 +18,8 @@ rule digestion:
 
 rule bowtie2:
 	input:
-		index="data/Bowtie2Index/hg19",
-		fastq="data/fastq_digested/{sample}.digested.fastq"
+		index = "data/Bowtie2Index/hg19",
+		fastq = "data/fastq_digested/{sample}.digested.fastq"
 	output:
 		"data/sam/{sample}.sam"
 	shell:
@@ -37,13 +37,13 @@ rule filtering:
 	input:
 		expand("data/bam/{sample}.bowtie2.bam", sample=SAMPLES)
 	output:
-		"data/supportive_filtering/statistics_{res}.tsv"
+		"data/supportive_filtering/{res}.tsv"
 	shell:
 		"src/py/filtering.py {input} {output}"
 
 rule statistics:
 	input:
-		"data/supportive_filtering/statistics_{res}.tsv"
+		"data/supportive_filtering/{res}.tsv"
 	output:
 		dist = "data/analysis/plots/distances_{res}.png", 
 		RvsR = "data/analysis/plots/RvsR_{res}.png"
