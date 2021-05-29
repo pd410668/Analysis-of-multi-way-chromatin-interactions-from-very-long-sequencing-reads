@@ -40,12 +40,12 @@ def cleaning(alignments):
 
 def in_proximity(align_1, align_2):
     # if two alignments are found on the same chromosome
-    # and the absolute value of their position does not exceed 1,000 bp
-    return align_1[2] == align_2[2] and abs(align_1[3] - align_2[3]) <= 1000
+    # and the absolute value of their position does not exceed 1,500 bp
+    return align_1[2] == align_2[2] and abs(align_1[3] - align_2[3]) <= 1500
 
 def collect_statistics(data, experiment_name, WvsA):
     # saving supportive tsv file to make statistics
-    with open(f"{experiment_name}", WvsA, newline='') as outfile:
+    with open(f"{experiment_name}.tsv", WvsA, newline='') as outfile:
         tsv_output = csv.writer(outfile, delimiter='\t')
         tsv_output.writerow(data)
 
@@ -57,20 +57,75 @@ experiment_name = sys.argv[3]
 fieldnames = ["seqname", "chr_R1", "pos_R1", "strand_R1", "chr_R2", "pos_R2", "strand_R1", "RvsR", "abs_pos"]
 collect_statistics(fieldnames, experiment_name, "w")
 
-# List of atypical chromosomes found in sample
+# List of all atypical chromosomes
 atypical_chrs = ["chrM",
-                "chrUn_gl000232",
-                "chrUn_gl000220",
-                "chrUn_gl000224",
-                "chrUn_gl000234",
-                "chrUn_gl000231",
-                "chrUn_gl000240",
-                "chr7_gl000195_random",
-                "chr4_gl000194_random",
+                "chr1_gl000191_random",
+                "chr1_gl000192_random",
                 "chr4_gl000193_random",
-                "chr19_gl000208_random"
+                "chr4_gl000194_random",
+                "chr7_gl000195_random",
+                "chr8_gl000196_random",
+                "chr8_gl000197_random",
+                "chr9_gl000198_random",
+                "chr9_gl000199_random",
+                "chr9_gl000200_random",
+                "chr9_gl000201_random",
+                "chr11_gl000202_random",
+                "chr17_gl000203_random",
+                "chr17_gl000204_random",
+                "chr17_gl000205_random",
+                "chr17_gl000206_random",
+                "chr18_gl000207_random",
+                "chr19_gl000208_random",
+                "chr19_gl000209_random",
+                "chr21_gl000210_random",
+                "chrUn_gl000211",
+                "chrUn_gl000212",
+                "chrUn_gl000213",
+                "chrUn_gl000214",
+                "chrUn_gl000215",
+                "chrUn_gl000216",
+                "chrUn_gl000217",
+                "chrUn_gl000218",
+                "chrUn_gl000219",
+                "chrUn_gl000243",
+                "chrUn_gl000244",
+                "chrUn_gl000245",
+                "chrUn_gl000246",
+                "chrUn_gl000247",
+                "chrUn_gl000248",
+                "chrUn_gl000249",
+                "chrUn_gl000220",
+                "chrUn_gl000221",
+                "chrUn_gl000222",
+                "chrUn_gl000223",
+                "chrUn_gl000224",
+                "chrUn_gl000225",
+                "chrUn_gl000226",
+                "chrUn_gl000227",
+                "chrUn_gl000228",
+                "chrUn_gl000229",
+                "chrUn_gl000230",
+                "chrUn_gl000231",
+                "chrUn_gl000232",
+                "chrUn_gl000233",
+                "chrUn_gl000234",
+                "chrUn_gl000235",
+                "chrUn_gl000236",
+                "chrUn_gl000237",
+                "chrUn_gl000238",
+                "chrUn_gl000239",
+                "chrUn_gl000240",
+                "chrUn_gl000241",
+                "chrUn_gl000242",
+                "chrUn_gl000243",
+                "chrUn_gl000244",
+                "chrUn_gl000245",
+                "chrUn_gl000246",
+                "chrUn_gl000247",
+                "chrUn_gl000248",
+                "chrUn_gl000249"
                 ]
-
 def main():
     alignments_R1 = parse_bam(f"{experiment_R1}", 1)
     alignments_R2 = parse_bam(f"{experiment_R2}", 2)
