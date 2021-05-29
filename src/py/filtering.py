@@ -45,7 +45,7 @@ def in_proximity(align_1, align_2):
 
 def collect_statistics(data, experiment_name, WvsA):
     # saving supportive tsv file to make statistics
-    with open(f"{experiment_name}.tsv", WvsA, newline='') as outfile:
+    with open(f"{experiment_name}", WvsA, newline='') as outfile:
         tsv_output = csv.writer(outfile, delimiter='\t')
         tsv_output.writerow(data)
 
