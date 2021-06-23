@@ -54,13 +54,24 @@ def main():
     COUNT_clean = counted[1]
     COUNT_rejected = counted[2]
     LABELS = counted[3]
+    
+    SCALAR_clean = [x1 / x2 for (x1, x2) in zip(COUNT_clean, COUNT_all)]
+    SCALAR_rejected = [x1 / x2 for (x1, x2) in zip(COUNT_rejected, COUNT_all)]
 
-    """ The quantity of useful sub-samples has a normal distribution """
+    """ The quantity of sub-samples has a normal distribution """
+
+    print(st.shapiro(scalar_rejected))  # ShapiroResult(statistic=0.9351547360420227, pvalue=0.02924210950732231)
+    print(st.shapiro(scalar_clean))     # ShapiroResult(statistic=0.935154914855957, pvalue=0.029242411255836487)
+    
     print(st.shapiro(COUNT_all))       # ShapiroResult(statistic=0.7983113527297974, pvalue=9.660232535679825e-06)
     print(st.shapiro(COUNT_clean))     # ShapiroResult(statistic=0.8580167293548584, pvalue=0.00020296304137445986)
     print(st.shapiro(COUNT_rejected))  # ShapiroResult(statistic=0.6690419912338257, pvalue=5.432401195548664e-08)
 
     """ Create 95% confidence interval (using normal distribution) for population """
+    
+    print(st.norm.interval(alpha=0.95, loc=np.mean(scalar_clean), scale=st.sem(scalar_clean)))           # (0.519985104938007, 0.6097291042600291)
+    print(st.norm.interval(alpha=0.95, loc=np.mean(scalar_rejected), scale=st.sem(scalar_rejected)))     # (0.39027089573997087, 0.480014895061993)
+    
     print(st.norm.interval(alpha=0.95, loc=np.mean(COUNT_all), scale=st.sem(COUNT_all)))             #  (1390578.197220105, 2233960.06593779)
     print(st.norm.interval(alpha=0.95, loc=np.mean(COUNT_clean), scale=st.sem(COUNT_clean)))         #  (766191.0162746658, 1168563.7205674392)
     print(st.norm.interval(alpha=0.95, loc=np.mean(COUNT_rejected), scale=st.sem(COUNT_rejected)))   #  (572586.2517241447, 1117197.2745916448)
