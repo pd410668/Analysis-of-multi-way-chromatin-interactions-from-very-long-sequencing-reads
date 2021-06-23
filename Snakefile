@@ -6,13 +6,6 @@ EXP = list(set([i.rsplit('_I')[0] for i in SAMPLES]))
 
 rule all:
 	input:
-		# expand("data/analysis/plots/{res}_RvsR.png", res=RES),
-		# expand("data/analysis/plots/{res}_0_5000_R.png", res=RES),
-		# expand("data/analysis/plots/{res}_500_10000_R.png", res=RES),
-		# expand("data/analysis/plots/{res}_strand_1vs2.png", res=RES),
-		# expand("data/analysis/plots/{res}_0_5000_S.png", res=RES),
-		# expand("data/analysis/plots/{res}_500_10000_S.png", res=RES),
-		# expand("data/analysis/plots/{res}_log10_500_1000.png", res=RES)
 		expand("data/analysis/plots/{exp}_barh.png", exp=EXP),
 		expand("data/analysis/plots/{exp}_displot.png", exp=EXP)
 		
