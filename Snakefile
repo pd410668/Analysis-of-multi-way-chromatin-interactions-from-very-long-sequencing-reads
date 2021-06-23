@@ -1,17 +1,20 @@
 # experiment on k562 human cells
 
-SAMPLES=["hs_k562_II_3_R1", "hs_k562_II_3_R2"] 
+SAMPLES=["hs_k562_I_1_R1", "hs_k562_I_1_R2"] 
 RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
+EXP = list(set([i.rsplit('_I')[0] for i in SAMPLES]))
 
 rule all:
 	input:
-		expand("data/analysis/plots/{res}_RvsR.png", res=RES),
-		expand("data/analysis/plots/{res}_0_5000_R.png", res=RES),
-		expand("data/analysis/plots/{res}_500_10000_R.png", res=RES),
-		expand("data/analysis/plots/{res}_strand_1vs2.png", res=RES),
-		expand("data/analysis/plots/{res}_0_5000_S.png", res=RES),
-		expand("data/analysis/plots/{res}_500_10000_S.png", res=RES),
-		expand("data/analysis/plots/{res}_log10_500_1000.png", res=RES)
+		# expand("data/analysis/plots/{res}_RvsR.png", res=RES),
+		# expand("data/analysis/plots/{res}_0_5000_R.png", res=RES),
+		# expand("data/analysis/plots/{res}_500_10000_R.png", res=RES),
+		# expand("data/analysis/plots/{res}_strand_1vs2.png", res=RES),
+		# expand("data/analysis/plots/{res}_0_5000_S.png", res=RES),
+		# expand("data/analysis/plots/{res}_500_10000_S.png", res=RES),
+		# expand("data/analysis/plots/{res}_log10_500_1000.png", res=RES)
+		expand("data/analysis/plots/{exp}_barh.png", exp=EXP),
+		expand("data/analysis/plots/{exp}_displot.png", exp=EXP)
 		
 rule digestion:
 	input:
@@ -46,7 +49,7 @@ rule filtering:
 	shell:
 		"src/py/filtering.py {input} {output}"
 
-rule statistics:
+rule charts:
 	input:
 		"data/supportive_filtering/{res}.tsv"
 	output:
@@ -58,4 +61,13 @@ rule statistics:
 		dist_500_10000_S = "data/analysis/plots/{res}_500_10000_S.png",
 		log10 = "data/analysis/plots/{res}_log10_500_1000.png"
 	shell:
-		"src/py/statistics.py {input} {output.RvsR_barplot} {output.dist_0_5000_R} {output.dist_500_10000_R} {output.strand_1vs2_barplot} {output.dist_0_5000_S} {output.dist_500_10000_S} {output.log10}"
+		"src/py/charts.py {input} {output.RvsR_barplot} {output.dist_0_5000_R} {output.dist_500_10000_R} {output.strand_1vs2_barplot} {output.dist_0_5000_S} {output.dist_500_10000_S} {output.log10}"
+
+rule statistics:
+	input:
+		expand("data/supportive_filtering", exp=EXP)
+	output:
+		barh = "data/analysis/plots/{exp}_barh.png",
+		displot = "data/analysis/plots/{exp}_displot.png"
+	shell:
+		"src/py/statistics.py {input} {output.barh} {output.displot}"
