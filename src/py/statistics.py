@@ -48,23 +48,26 @@ def displot(data, name):
     plt.legend(["all alignments", "alignments with condition", "rejected alignments"])
     return plt.savefig(f"{name}"), plt.close()
 
-counted = count_aligns(infiles)
-COUNT_all = counted[0]
-COUNT_clean = counted[1]
-COUNT_rejected = counted[2]
-LABELS = counted[3]
+def main():
+    counted = count_aligns(infiles)
+    COUNT_all = counted[0]
+    COUNT_clean = counted[1]
+    COUNT_rejected = counted[2]
+    LABELS = counted[3]
 
-""" The quantity of useful sub-samples has a normal distribution """
-print(st.shapiro(COUNT_all))       # ShapiroResult(statistic=0.7983113527297974, pvalue=9.660232535679825e-06)
-print(st.shapiro(COUNT_clean))     # ShapiroResult(statistic=0.8580167293548584, pvalue=0.00020296304137445986)
-print(st.shapiro(COUNT_rejected))  # ShapiroResult(statistic=0.6690419912338257, pvalue=5.432401195548664e-08)
+    """ The quantity of useful sub-samples has a normal distribution """
+    print(st.shapiro(COUNT_all))       # ShapiroResult(statistic=0.7983113527297974, pvalue=9.660232535679825e-06)
+    print(st.shapiro(COUNT_clean))     # ShapiroResult(statistic=0.8580167293548584, pvalue=0.00020296304137445986)
+    print(st.shapiro(COUNT_rejected))  # ShapiroResult(statistic=0.6690419912338257, pvalue=5.432401195548664e-08)
 
-""" Create 95% confidence interval (using normal distribution) for population """
-print(st.norm.interval(alpha=0.95, loc=np.mean(COUNT_all), scale=st.sem(COUNT_all)))             #  (1390578.197220105, 2233960.06593779)
-print(st.norm.interval(alpha=0.95, loc=np.mean(COUNT_clean), scale=st.sem(COUNT_clean)))         #  (766191.0162746658, 1168563.7205674392)
-print(st.norm.interval(alpha=0.95, loc=np.mean(COUNT_rejected), scale=st.sem(COUNT_rejected)))   #  (572586.2517241447, 1117197.2745916448)
+    """ Create 95% confidence interval (using normal distribution) for population """
+    print(st.norm.interval(alpha=0.95, loc=np.mean(COUNT_all), scale=st.sem(COUNT_all)))             #  (1390578.197220105, 2233960.06593779)
+    print(st.norm.interval(alpha=0.95, loc=np.mean(COUNT_clean), scale=st.sem(COUNT_clean)))         #  (766191.0162746658, 1168563.7205674392)
+    print(st.norm.interval(alpha=0.95, loc=np.mean(COUNT_rejected), scale=st.sem(COUNT_rejected)))   #  (572586.2517241447, 1117197.2745916448)
 
-""" Plotting """
-barh(COUNT_clean, LABELS, sys.argv[2])
-displot(counted, sys.argv[3])
+    """ Plotting """
+    barh(COUNT_clean, LABELS, sys.argv[2])
+    displot(counted, sys.argv[3])
 
+if __name__ == '__main__':
+    main()
