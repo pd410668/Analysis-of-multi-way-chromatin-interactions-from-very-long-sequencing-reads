@@ -36,6 +36,11 @@ restriction_intervals = intervals(headers)
 nodes = headers[:-1]          # list
 edges = [[i] for i in nodes]  # list of lists
 
+for pos_R1, pos_R2 in parse_positions(sys.argv[2]):  # .tsv
+    for i in range(len(restriction_intervals)):
+        if pos_R1 and pos_R2 in restriction_intervals[i]:
+            edges[i].append(nodes[i])
+            
 to_remove = []
 for edge in edges:
     if len(edge) == 1:
@@ -46,11 +51,6 @@ for rm in to_remove:
     if rm[0] in nodes:
         index = nodes.index(rm[0])
         nodes[index] = None
-
-for pos_R1, pos_R2 in parse_positions(sys.argv[2]):  # .tsv
-    for i in range(len(restriction_intervals)):
-        if pos_R1 and pos_R2 in restriction_intervals[i]:
-            edges[i].append(nodes[i])
 
 graph_df = pd.DataFrame({"from": nodes, "to": edges}).dropna()
 
