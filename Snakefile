@@ -6,8 +6,15 @@ EXP = list(set([i.rsplit('_I')[0] for i in SAMPLES]))
 
 rule all:
 	input:
-		expand("data/analysis/plots/{exp}_barh.png", exp=EXP),
-		expand("data/analysis/plots/{exp}_displot.png", exp=EXP)
+		# expand("data/analysis/plots/{res}_RvsR.png", res=RES),
+		# expand("data/analysis/plots/{res}_0_5000_R.png", res=RES),
+		# expand("data/analysis/plots/{res}_500_10000_R.png", res=RES),
+		# expand("data/analysis/plots/{res}_strand_1vs2.png", res=RES),
+		# expand("data/analysis/plots/{res}_0_5000_S.png", res=RES),
+		# expand("data/analysis/plots/{res}_500_10000_S.png", res=RES),
+		# expand("data/analysis/plots/{res}_log10_500_1000.png", res=RES)
+		# expand("data/analysis/plots/{exp}_barh.png", exp=EXP),
+		expand("data/analysis/plots/{exp}_graph.png")
 		
 rule digestion:
 	input:
@@ -64,3 +71,20 @@ rule statistics:
 		displot = "data/analysis/plots/{exp}_displot.png"
 	shell:
 		"src/py/statistics.py {input} {output.barh} {output.displot}"
+
+rule bedtools:
+	input:
+		ref = "data/reference_fasta/hg19.fa.gz",
+		DpnII_hg19 = "data/rest_site_positions/bed/DpnII_hg19.bed"
+	output:
+		DpnII_hg19_seq = "data/rest_site_positions/seq/DpnII_hg19_seq.fa"
+	shell:
+		"bedtools getfasta -fi {input.ref} -bed {input.DpnII_hg19} -fo {output.DpnII_hg19_seq}"
+
+rule graph:
+	input:
+		"data/rest_site_positions/seq/DpnII_hg19_seq.fa"
+	output:
+		expand("data/analysis/plots/{exp}_graph.png")
+	shell:
+		"src/py/graph.py {input} {output}"  
