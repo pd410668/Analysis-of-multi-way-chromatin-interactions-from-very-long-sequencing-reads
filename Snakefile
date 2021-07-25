@@ -6,7 +6,6 @@ EXP = list(set([i.rsplit('_I')[0] for i in SAMPLES]))
 
 rule all:
 	input:
-<<<<<<< HEAD
 		expand("data/analysis/plots/{res}_RvsR.png", res=RES),
 		expand("data/analysis/plots/{res}_0_5000_R.png", res=RES),
 		expand("data/analysis/plots/{res}_500_10000_R.png", res=RES),
@@ -16,17 +15,6 @@ rule all:
 		expand("data/analysis/plots/{res}_log10_500_1000.png", res=RES)
 		expand("data/analysis/plots/{exp}_barh.png", exp=EXP),
 		expand("data/supportive_graph/{res}_graph.txt", res=RES)
-=======
-		# expand("data/analysis/plots/{res}_RvsR.png", res=RES),
-		# expand("data/analysis/plots/{res}_0_5000_R.png", res=RES),
-		# expand("data/analysis/plots/{res}_500_10000_R.png", res=RES),
-		# expand("data/analysis/plots/{res}_strand_1vs2.png", res=RES),
-		# expand("data/analysis/plots/{res}_0_5000_S.png", res=RES),
-		# expand("data/analysis/plots/{res}_500_10000_S.png", res=RES),
-		# expand("data/analysis/plots/{res}_log10_500_1000.png", res=RES)
-		# expand("data/analysis/plots/{exp}_barh.png", exp=EXP),
-		expand("data/analysis/plots/{exp}_graph.png")
->>>>>>> 8c88a83f444b5e0113c0165457dfeb7f6e195201
 		
 rule digestion:
 	input:
@@ -84,7 +72,6 @@ rule statistics:
 	shell:
 		"src/py/statistics.py {input} {output.barh} {output.displot}"
 
-<<<<<<< HEAD
 rule graph:
 	input:
 		tsvfile = "data/supportive_filtering/{res}.tsv"
@@ -93,21 +80,4 @@ rule graph:
 		"data/supportive_graph/{res}_graph.txt"
 	shell:
 		"src/py/graph.py {input.tsvfile} {input.bedfile} {output}"  
-=======
-rule bedtools:
-	input:
-		ref = "data/reference_fasta/hg19.fa.gz",
-		DpnII_hg19 = "data/rest_site_positions/bed/DpnII_hg19.bed"
-	output:
-		DpnII_hg19_seq = "data/rest_site_positions/seq/DpnII_hg19_seq.fa"
-	shell:
-		"bedtools getfasta -fi {input.ref} -bed {input.DpnII_hg19} -fo {output.DpnII_hg19_seq}"
-
-rule graph:
-	input:
-		"data/rest_site_positions/seq/DpnII_hg19_seq.fa"
-	output:
-		expand("data/analysis/plots/{exp}_graph.png")
-	shell:
-		"src/py/graph.py {input} {output}"  
->>>>>>> 8c88a83f444b5e0113c0165457dfeb7f6e195201
+		
