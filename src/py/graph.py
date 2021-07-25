@@ -31,20 +31,20 @@ def add_edge(u, v):
         G.add_edge(u, v, weight=1)
 
 
-""" Initiation basic dependencies """
+if __name__ == '__main__':
 
-positions = parse_positions(sys.argv[1])  # .tsv file
-restrictions, chromosomes = read_bedfile(sys.argv[2])  # .bed file
-G = nx.Graph()
+    """ Initiation basic dependencies """
 
-""" Interval tree construction """
+    positions = parse_positions(sys.argv[1])  # .tsv file
+    restrictions, chromosomes = read_bedfile(sys.argv[2])  # .bed file
+    G = nx.Graph()
 
-intervals = [(i, j, chr) for i, j, chr in zip(restrictions[:-1], restrictions[1:], chromosomes[:-1]) if i <= j]
-tree = IntervalTree.from_tuples(intervals)
+    """ Interval tree construction """
 
+    intervals = [(i, j, chr) for i, j, chr in zip(restrictions[:-1], restrictions[1:], chromosomes[:-1]) if i <= j]
+    tree = IntervalTree.from_tuples(intervals)
 
-def graph_construction(tsvpositions: zip):
-    for position_R1, position_R2 in tsvpositions:
+    for position_R1, position_R2 in positions:
 
         right_edge = tree[position_R1]
         left_edge = tree[position_R2]
@@ -52,28 +52,26 @@ def graph_construction(tsvpositions: zip):
         if right_edge and left_edge:
             add_edge(repr(right_edge)[9:-1], repr(right_edge)[9:-1])  # ex. (50256114, 50257366, 'chr1')
 
+    """
+    Find the node-pair for which its read coverage is maximal,
+    and define this coverage as R
+    """
 
-graph_construction(positions)
+    R = (max(dict(G.edges).items(), key=lambda x: x[1]["weight"]))[1].get("weight")
 
-"""
-Find the node-pair for which its read coverage is maximal,
-and define this coverage as R
-"""
+    """
+    Eliminate all other appearances of the nodes-pairs
+    if their coverage is less than 0.1 × R
+    """
 
-R = (max(dict(G.edges).items(), key=lambda x: x[1]["weight"]))[1].get("weight")
+    edge_weights = nx.get_edge_attributes(G, "weight")
+    G.remove_edges_from((edge for edge, weight in edge_weights.items() if weight < 0.1 * R))
 
-"""
-Eliminate all other appearances of the nodes-pairs
-if their coverage is less than 0.1 × R
-"""
+    """ Remove loops """
 
-edge_weights = nx.get_edge_attributes(G, "weight")
-G.remove_edges_from((edge for edge, weight in edge_weights.items() if weight < 0.1 * R))
+    G.remove_edges_from(nx.selfloop_edges(G))
 
-""" Remove loops """
+    """ Write to .txt file graph in binary mode """
 
-G.remove_edges_from(nx.selfloop_edges(G))
-
-""" Write to .txt file graph in binary mode """
-
-pickle.dump(G, open(sys.argv[3], "wb"))  # .txt outfile
+    pickle.dump(G, open(sys.argv[3], "wb"))  # .txt outfile
+    
