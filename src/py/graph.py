@@ -16,7 +16,7 @@ def parse_positions(tsvfile: str) -> zip:
 
 def read_bedfile(bedfile: str) -> list:
     """ Return lists of restrictions sites positions and chromosomes where they were found """
-    df = pd.read_csv(bedfile, sep="\t", header=None)x
+    df = pd.read_csv(bedfile, sep="\t", header=None)
     df = df.loc[df[0].isin(typical_chromosomes())].reset_index(drop=True)
     chr = df[0].tolist()
     pos = df[1].tolist()
