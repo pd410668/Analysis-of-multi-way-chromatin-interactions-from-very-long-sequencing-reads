@@ -74,7 +74,3 @@ if __name__ == '__main__':
     """ Write to .txt file graph in binary mode """
 
     pickle.dump(G, open(sys.argv[3], "wb"))  # .txt outfile
-<<<<<<< HEAD
-    
-=======
->>>>>>> f5dd732a1b4f050c0cd2881bebbbef2354442adc
