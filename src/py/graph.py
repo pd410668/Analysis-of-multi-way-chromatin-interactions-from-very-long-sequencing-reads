@@ -51,7 +51,7 @@ if __name__ == '__main__':
         left_edge = tree[position_R1]
         right_edge = tree[position_R2]
 
-        if left_edge and right_edge:
+        if (left_edge and right_edge) and (right_edge != left_edge):
             add_edge(repr(left_edge)[9:-1], repr(right_edge)[9:-1])  # ex. (50256114, 50257366, 'chr1')
 
     """
@@ -68,10 +68,6 @@ if __name__ == '__main__':
 
     edge_weights = nx.get_edge_attributes(G, "weight")
     G.remove_edges_from((edge for edge, weight in edge_weights.items() if weight < 0.1 * R))
-
-    """ Remove self-loops """
-
-    G.remove_edges_from(nx.selfloop_edges(G))
 
     """ Write to .txt file graph in binary mode """
 
