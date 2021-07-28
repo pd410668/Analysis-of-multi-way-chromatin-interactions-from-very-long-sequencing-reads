@@ -5,7 +5,7 @@ RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
 
 rule all:
 	input:
-		expand("data/supportive_graph/{res}_graph.txt", res=RES)
+		expand("data/cwalk_graph/{res}_cwalk_graph.txt", res=RES)
 		
 rule digestion:
 	input:
