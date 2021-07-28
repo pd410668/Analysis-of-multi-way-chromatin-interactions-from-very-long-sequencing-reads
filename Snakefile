@@ -1,6 +1,6 @@
 # experiment on k562 human cells
 
-SAMPLES=["hs_k562_I_2_R1", "hs_k562_I_2_R2"] 
+SAMPLES=["hs_k562_I_1_R1", "hs_k562_I_1_R2"] 
 RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
 
 rule all:
@@ -47,4 +47,12 @@ rule graph:
 	output:
 		"data/supportive_graph/{res}_graph.txt"
 	shell:
-		"src/py/graph.py {input.tsvfile} {input.bedfile} {output}"  
+		"src/py/graph.py {input.tsvfile} {input.bedfile} {output}"
+
+rule cwalk:
+	input:
+		"data/supportive_graph/{res}_graph.txt"
+	output:
+		"data/cwalk_graph/{res}_cwalk_graph.txt"
+	shell:
+		"src/py/cwalk.py {input} {output}"
