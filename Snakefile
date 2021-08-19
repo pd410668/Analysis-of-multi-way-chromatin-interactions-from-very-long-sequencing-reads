@@ -1,12 +1,11 @@
-# experiment on k562 human cells
+	# experiment on k562 human cells
 
-SAMPLES=["hs_k562_II_2_R1", "hs_k562_II_2_R2"] 
+SAMPLES=["hs_k562_I_2_R1", "hs_k562_I_2_R2"] 
 RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
 
 rule all:
 	input:
-		# expand("data/cwalk_graph/{res}_cwalk_graph.txt", res=RES)
-		expand("data/supportive_graph/{res}_graph.txt", res=RES)
+		expand("data/cwalks/{res}_cwalks.txt", res=RES)
 		
 rule digestion:
 	input:
@@ -41,19 +40,11 @@ rule filtering:
 	shell:
 		"src/py/filtering.py {input} {output}"
 
-rule graph:
+rule cwalk:
 	input:
 		tsvfile = "data/supportive_filtering/{res}.tsv",
 		bedfile = "data/restriction_positions/DpnII_hg19.bed"
 	output:
-		"data/supportive_graph/{res}_graph.txt"
+		"data/cwalks/{res}_cwalks.txt"
 	shell:
-		"src/py/graph.py {input.tsvfile} {input.bedfile} {output}"
-
-# rule cwalk:
-# 	input:
-# 		"data/supportive_graph/{res}_graph.txt"
-# 	output:
-# 		"data/cwalk_graph/{res}_cwalk_graph.txt"
-# 	shell:
-# 		"src/py/cwalk.py {input} {output}"
+		"src/py/cwalk.py {input.tsvfile} {input.bedfile} {output}"
