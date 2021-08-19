@@ -39,10 +39,16 @@ def cwalk(edges):
     for u, v, a in edges:
         if (u not in P or P.degree[u] < 2) and (v not in P or P.degree[v] < 2):
             P.add_edge(u, v, weight=a["weight"])
+
+    for cwalk in list(nx.connected_components(P)):
+        if len(cwalk) < 3:
+            for node in cwalk:
+                P.remove_node(node)  # Remove cwalks that are include one hop
     return P
 
 
 if __name__ == '__main__':
+    
     """ Initiation basic dependencies """
     positions = parse_positions(sys.argv[1])  # .tsv file
     restrictions, chromosomes = read_bedfile(sys.argv[2])  # .bed file
@@ -57,10 +63,12 @@ if __name__ == '__main__':
         left_edge = tree[position_R1]
         right_edge = tree[position_R2]
 
-        if (left_edge and right_edge) and (right_edge != left_edge):
-            add_edge(repr(left_edge)[9:-1], repr(right_edge)[9:-1])  # ex. (50256114, 50257366, 'chr1')
+        for i in list(left_edge):
+            for j in list(right_edge):
+                if i != j:  # prevention of self-loops
+                    add_edge(i, j)
 
     """  C-walks construction """
     sorted_edges = sorted(G.edges(data=True), key=lambda x: x[2]["weight"], reverse=True)  # Sort edges by read-coverage
     P = cwalk(sorted_edges)
-    pickle.dump(P, open(sys.argv[3], "wb"))  # .txt outfile
+    pickle.dump(P, open(sys.argv[3], "wb"))  # save as .txt outfile in binary mode
