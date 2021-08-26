@@ -32,7 +32,7 @@ def add_edge(u, v):
     else:
         G.add_edge(u, v, weight=1)
 
-        
+
 def matching_edges(interval_tree):
     """ Graph construction """
     for position_R1, position_R2 in positions:
@@ -43,7 +43,7 @@ def matching_edges(interval_tree):
         if (left_edge and right_edge) and (left_edge != right_edge):  # prevention of empty sets and self-loops
             add_edge(tuple(list(left_edge)[0]), tuple(list(right_edge)[0]))  # ex. (77366342.0, 77367727.0, 'chr1')
             # print(tuple(list(left_edge)[0]), tuple(list(right_edge)[0]))
-            
+
 
 def cwalk(edges):
     """ Resolve the C-walk graph """
@@ -67,15 +67,15 @@ def save_as_bed(graph):
             node = [node[i] for i in order]
             node.append(length)
             collect_data(node, "cwalk.bed", "a")
-            
-            
+
+
 if __name__ == '__main__':
 
     G = nx.Graph()
 
     for chr in typical_chromosomes():
-        positions = parse_positions("hs_k562_I_1.tsv", 500)  # .tsv file
-        restrictions, chromosomes = read_bedfile("DpnII_hg19.bed", chr)  # .bed file
+        positions = parse_positions(sys.argv[1], 500)  # .tsv file
+        restrictions, chromosomes = read_bedfile(sys.argv[2], chr)  # .bed file
 
         """ Interval tree construction """  # separate for each chromosome
         intervals = [(i, j, chr) for i, j, chr in zip(restrictions[:-1], restrictions[1:], chromosomes[:-1]) if i <= j]
@@ -86,4 +86,5 @@ if __name__ == '__main__':
     sorted_edges = sorted(G.edges(data=True), key=lambda x: x[2]["weight"], reverse=True)  # Sort edges by read-coverage
     P = cwalk(sorted_edges)
 #    save_as_bed(P)  # save as .bed outfile with cwalks
-    pickle.dump(P, open("cwalk.txt", "wb"))  # save as .txt outfile in binary mode
+    pickle.dump(P, open(sys.argv[3], "wb"))  # save as .txt outfile in binary mode
+
