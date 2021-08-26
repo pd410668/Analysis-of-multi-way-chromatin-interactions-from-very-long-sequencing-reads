@@ -10,7 +10,7 @@ import sys
 
 
 def parse_positions(tsvfile: str, abs_threshold: int) -> zip:
-    """ Returns lists of positions of aligns that are apart => 500 """
+    """ Returns lists of positions of aligns that are apart selected absolute threshold """
     df = pd.read_csv(tsvfile, sep='\t')
     df = df.where(df.abs_pos >= abs_threshold).dropna().reset_index(drop=True)
     return zip(df.pos_R1.tolist(), df.pos_R2.tolist())
