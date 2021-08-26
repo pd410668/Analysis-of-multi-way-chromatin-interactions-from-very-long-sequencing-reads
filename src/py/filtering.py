@@ -2,7 +2,6 @@
 
 import pysam
 import sys
-import csv
 
 
 def parse_bam(inbamfile, read):
@@ -31,6 +30,7 @@ def cleaning(alignments):
 
 def collect_data(data, experiment_name, WvsA):
     """ saving supportive file to further analysis """
+    import csv
     with open(f"{experiment_name}", WvsA, newline='') as outfile:
         tsv_output = csv.writer(outfile, delimiter='\t')
         tsv_output.writerow(data)
