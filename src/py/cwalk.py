@@ -2,10 +2,8 @@
 
 import networkx as nx
 import pandas as pd
-from filtering import typical_chromosomes
-import matplotlib.pyplot as plt
+from filtering import typical_chromosomes, collect_data
 from intervaltree import IntervalTree
-import pickle
 import sys
 
 
@@ -21,6 +19,7 @@ def read_bedfile(bedfile: str, chromosome: str) -> list:
     df = pd.read_csv(bedfile, sep="\t", header=None)
     df = df.loc[df[0].isin(typical_chromosomes())].reset_index(drop=True)
     df = df.where(df[0] == chromosome).dropna().reset_index(drop=True)
+    df[1] = df[1].astype(int)
     chr = df[0].tolist()
     pos = df[1].tolist()
     return pos, chr
@@ -60,6 +59,16 @@ def cwalk(edges):
     return P
 
 
+def save_as_bed(graph):
+    order = [2, 0, 1]
+    for cwalk in list(nx.connected_components(graph)):
+        cwalk_length = range(1, len(cwalk) + 1)
+        for node, length in zip(cwalk, cwalk_length):
+            node = [node[i] for i in order]
+            node.append(length)
+            collect_data(node, "cwalk.bed", "a")
+            
+            
 if __name__ == '__main__':
 
     G = nx.Graph()
@@ -76,4 +85,5 @@ if __name__ == '__main__':
     """  C-walks construction """
     sorted_edges = sorted(G.edges(data=True), key=lambda x: x[2]["weight"], reverse=True)  # Sort edges by read-coverage
     P = cwalk(sorted_edges)
+    save_as_bed(P)  # save as .bed outfile with cwalks
     pickle.dump(P, open("cwalk.txt", "wb"))  # save as .txt outfile in binary mode
