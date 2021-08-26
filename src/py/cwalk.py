@@ -85,5 +85,5 @@ if __name__ == '__main__':
     """  C-walks construction """
     sorted_edges = sorted(G.edges(data=True), key=lambda x: x[2]["weight"], reverse=True)  # Sort edges by read-coverage
     P = cwalk(sorted_edges)
-    save_as_bed(P)  # save as .bed outfile with cwalks
+#    save_as_bed(P)  # save as .bed outfile with cwalks
     pickle.dump(P, open("cwalk.txt", "wb"))  # save as .txt outfile in binary mode
