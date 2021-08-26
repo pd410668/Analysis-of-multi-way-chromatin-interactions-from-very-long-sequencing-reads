@@ -4,6 +4,7 @@ import networkx as nx
 import pandas as pd
 from filtering import typical_chromosomes, collect_data
 from intervaltree import IntervalTree
+import pickle
 import sys
 
 
