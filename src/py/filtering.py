@@ -4,13 +4,6 @@ import pysam
 import sys
 import csv
 
-"""
-filtering.py taking as input two bam files R1, R2
-and return experimen_name.tsv file
-usage: 
-chmod 777 filtering.py
-./filtering.py experiment.R1 experiment.R2 experiment_name
-"""
 
 def parse_bam(inbamfile, read):
     """ load bam two bam files and create list of tuples """
@@ -30,22 +23,26 @@ def parse_bam(inbamfile, read):
         alignments_list.append(align)
     return alignments_list
 
+
 def cleaning(alignments):
     """ filtering not mapped alignment and with quality below 30 """
     return [align for align in alignments if align[4] >= 30]
 
-def collect_statistics(data, experiment_name, WvsA):
-    """ saving supportive tsv file to make statistics """
+
+def collect_data(data, experiment_name, WvsA):
+    """ saving supportive file to further analysis """
     with open(f"{experiment_name}", WvsA, newline='') as outfile:
         tsv_output = csv.writer(outfile, delimiter='\t')
         tsv_output.writerow(data)
       
+    
 def typical_chromosomes() -> list:
     """ return list of typical chromosomes """
     chrs = [f"chr{i}" for i in range(1, 23)]
     chrs.extend(["chrX", "chrY"])
     return chrs
-        
+     
+    
 if __name__ == '__main__':
     
     experiment_R1 = sys.argv[1]
@@ -54,7 +51,7 @@ if __name__ == '__main__':
 
     """ create .tsv file with field names """
     fieldnames = ["seqname", "chr", "pos_R1", "pos_R2", "strand_1vs2", "RvsR", "abs_pos"]
-    collect_statistics(fieldnames, experiment_name, "w")
+    collect_data(fieldnames, experiment_name, "w")
 
     alignments_R1 = parse_bam(f"{experiment_R1}", 1)
     alignments_R2 = parse_bam(f"{experiment_R2}", 2)
@@ -102,4 +99,4 @@ if __name__ == '__main__':
                             abs(filtered_alignments[i][3] - filtered_alignments[j][3])      # abs_pos
                         ]
                         """ appends aligns to created .tsv file """
-                        collect_statistics(statistics, experiment_name, "a")               
+                        collect_data(statistics, experiment_name, "a")               
