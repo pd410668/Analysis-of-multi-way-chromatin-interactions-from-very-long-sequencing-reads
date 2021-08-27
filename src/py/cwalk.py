@@ -12,7 +12,7 @@ def parse_positions(tsvfile: str, abs_threshold: int) -> zip:
     """ Returns lists of positions of aligns that are apart selected absolute threshold """
     df = pd.read_csv(tsvfile, sep='\t')
     df = df.where(df.abs_pos >= abs_threshold).dropna().reset_index(drop=True)
-    return zip(df.pos_R1.tolist(), df.pos_R2.tolist())
+    return zip(df.chr.tolist(), df.pos_R1.tolist(), df.pos_R2.tolist())
 
 
 def read_bedfile(bedfile: str, chromosome: str) -> list:
@@ -34,15 +34,18 @@ def add_edge(u, v):
         G.add_edge(u, v, weight=1)
 
 
-def matching_edges(interval_tree):
-    """ Graph construction """
-    for position_R1, position_R2 in positions:
+def matching_edges(interval_tree_dict, positions):
+    """ Graph construction:
+    interval_tree: a dictionary storing the restriction intervals (as IntervalTree) for each chromosome
+    positions: list of C-walk positions
+    """
+    for chr, position_R1, position_R2 in positions:
 
-        left_edge = interval_tree[position_R1]
-        right_edge = interval_tree[position_R2]
+        left_edge = interval_tree_dict[chr][position_R1]
+        right_edge = interval_tree_dict[chr][position_R2]
 
         if (left_edge and right_edge) and (left_edge != right_edge):  # prevention of empty sets and self-loops
-            add_edge(tuple(list(left_edge)[0]), tuple(list(right_edge)[0]))  # ex. (77366342.0, 77367727.0, 'chr1')
+            add_edge(tuple(list(left_edge)[0]), tuple(list(right_edge)[0]))  # ex. (77366342, 77367727)
             # print(tuple(list(left_edge)[0]), tuple(list(right_edge)[0]))
 
 
@@ -85,7 +88,7 @@ if __name__ == '__main__':
 
    """ Parse C-walk positions """
    positions = parse_positions(sys.argv[1], 500)  # .tsv file
-   matching_edges(tree_dict)
+   matching_edges(tree_dict, positions)
 
     """  C-walks construction """
     sorted_edges = sorted(G.edges(data=True), key=lambda x: x[2]["weight"], reverse=True)  # Sort edges by read-coverage
