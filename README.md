@@ -1,1 +1,1 @@
-# Analysis-of-multi-way-chromatin-interactions-from-very-long-sequencing-reads
+# Analysis of multi-way chromatin interactions from very long sequencing reads
