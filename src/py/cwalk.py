@@ -74,14 +74,18 @@ if __name__ == '__main__':
 
     G = nx.Graph()
 
-    for chr in typical_chromosomes():
-        positions = parse_positions(sys.argv[1], 500)  # .tsv file
-        restrictions, chromosomes = read_bedfile(sys.argv[2], chr)  # .bed file
+    # e.g. tree_dict["chr1"] will be an object of type IntervalTree
+    tree_dict = dict()
 
-        """ Interval tree construction """  # separate for each chromosome
-        intervals = [(i, j, chr) for i, j, chr in zip(restrictions[:-1], restrictions[1:], chromosomes[:-1]) if i <= j]
-        tree = IntervalTree.from_tuples(intervals)
-        matching_edges(tree)
+    for chr in typical_chromosomes():
+        """ Interval tree construction, separate for each chromosome """
+        restrictions, chromosomes = read_bedfile(sys.argv[2], chr)  # .bed file
+        intervals = [(i, j) for i, j in zip(restrictions[:-1], restrictions[1:]) if i <= j]
+        tree_dict[chr] = IntervalTree.from_tuples(intervals)
+
+   """ Parse C-walk positions """
+   positions = parse_positions(sys.argv[1], 500)  # .tsv file
+   matching_edges(tree_dict)
 
     """  C-walks construction """
     sorted_edges = sorted(G.edges(data=True), key=lambda x: x[2]["weight"], reverse=True)  # Sort edges by read-coverage
