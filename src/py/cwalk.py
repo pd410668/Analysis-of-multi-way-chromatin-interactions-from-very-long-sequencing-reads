@@ -34,7 +34,7 @@ def add_edge(u, v):
         G.add_edge(u, v, weight=1)
 
 
-def matching_edges(interval_tree_dict, positions):
+def matching_edges(interval_tree_dict: dict, positions: zip):
     """ Graph construction:
     interval_tree: a dictionary storing the restriction intervals (as IntervalTree) for each chromosome
     positions: list of C-walk positions
@@ -44,9 +44,12 @@ def matching_edges(interval_tree_dict, positions):
         left_edge = interval_tree_dict[chr][position_R1]
         right_edge = interval_tree_dict[chr][position_R2]
 
+        right_edge = list(list(right_edge)[0])
+        left_edge = list(list(left_edge)[0])
+        right_edge[2], left_edge[2] = chr, chr
+
         if (left_edge and right_edge) and (left_edge != right_edge):  # prevention of empty sets and self-loops
-            add_edge(tuple(list(left_edge)[0]), tuple(list(right_edge)[0]))  # ex. (77366342, 77367727)
-            # print(tuple(list(left_edge)[0]), tuple(list(right_edge)[0]))
+            add_edge(tuple(left_edge), tuple(right_edge))  # ex. (77366342, 77367727, "chr1")
 
 
 def cwalk(edges):
@@ -63,36 +66,37 @@ def cwalk(edges):
     return P
 
 
-def save_as_bed(graph):
+def save_as_bed(graph, experiment_name):
+    numbers = list(range(1, nx.number_connected_components(graph) + 1))
     order = [2, 0, 1]
-    for cwalk in list(nx.connected_components(graph)):
+    for cwalk, number in zip(list(nx.connected_components(graph)), numbers):
         cwalk_length = range(1, len(cwalk) + 1)
+
         for node, length in zip(cwalk, cwalk_length):
             node = [node[i] for i in order]
-            node.append(length)
-            collect_data(node, "cwalk.bed", "a")
+            node.append(f"{length}_{number}")
+            collect_data(node, f"{experiment_name}", "a")
 
 
-if __name__ == '__main__':
-
-    G = nx.Graph()
-
-    # e.g. tree_dict["chr1"] will be an object of type IntervalTree
-    tree_dict = dict()
-
+def main():
+    tree_dict = dict()  # ex. tree_dict["chr1"] will be an object of type IntervalTree
     for chr in typical_chromosomes():
         """ Interval tree construction, separate for each chromosome """
         restrictions, chromosomes = read_bedfile(sys.argv[2], chr)  # .bed file
-        intervals = [(i, j) for i, j in zip(restrictions[:-1], restrictions[1:]) if i <= j]
+        intervals = [(i, j) for i, j in zip(restrictions[:-1], restrictions[1:])]
         tree_dict[chr] = IntervalTree.from_tuples(intervals)
 
-   """ Parse C-walk positions """
-   positions = parse_positions(sys.argv[1], 500)  # .tsv file
-   matching_edges(tree_dict, positions)
+    """ Parse C-walk positions """
+    positions = parse_positions(sys.argv[1], 500)  # .tsv file
+    matching_edges(tree_dict, positions)
 
     """  C-walks construction """
     sorted_edges = sorted(G.edges(data=True), key=lambda x: x[2]["weight"], reverse=True)  # Sort edges by read-coverage
     P = cwalk(sorted_edges)
-#    save_as_bed(P)  # save as .bed outfile with cwalks
-    pickle.dump(P, open(sys.argv[3], "wb"))  # save as .txt outfile in binary mode
+    save_as_bed(P, sys.argv[3])  # save as .bed outfile with cwalks
+    pickle.dump(P, open(sys.argv[4], "wb"))  # save cwalks as .txt outfile in binary mode
 
+
+if __name__ == '__main__':
+    G = nx.Graph()
+    main()

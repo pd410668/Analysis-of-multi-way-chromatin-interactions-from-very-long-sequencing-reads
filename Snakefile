@@ -68,9 +68,10 @@ rule charts:
 
 rule cwalk:
 	input:
-		tsvfile = "data/supportive/{res}.tsv",
-		bedfile = "data/restrictions/DpnII_hg19.bed"
+		tsv = "data/supportive/{res}.tsv",
+		bed = "data/restrictions/DpnII_hg19.bed"
 	output:
-		"data/cwalks/{res}_cwalks.txt"
+		cbed = "data/cwalks/{res}_cwalks.bed"
+		ctxt = "data/supportive/{res}_cwalks.txt"
 	shell:
-		"src/py/cwalk.py {input.tsvfile} {input.bedfile} {output}"
+		"src/py/cwalk.py {input.tsv} {input.bed} {output.cbed} {output.ctxt}"
