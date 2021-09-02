@@ -16,7 +16,7 @@ def load_cwalk_graph(cwalk_graph):
 def parse_tf(tf: str) -> list:
     """
     load transcription factor binding sites
-    return: list of chromosomes and peaks peaks within them
+    return: dict where chomosomes are keys and values are peaks within them
     """
     chrs_dict = dict()
     tf = pd.read_csv(tf, sep='\t', header=None)
