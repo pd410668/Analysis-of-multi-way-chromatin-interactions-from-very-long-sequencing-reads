@@ -27,23 +27,24 @@ def parse_tf(tf: str) -> list:
     return chrs_dict
 
 
-def count_peaks(path: set, peaks: dict) -> int:
+def count_peaks(path: set, peaks_dict: dict) -> int:
     """ how many times peaks from single chromosome is in one cwalk """
     cut = 0
     path = list(path)
     for node in path:
         itv = pd.Interval(node[0], node[1], closed="both")
-        for peak in peaks[chr]:
+        for peak in peaks_dict[chr]:
             if peak in itv:
                 cut += 1
     return cut
 
 
-def normalizing(graph, peaks):
+def normalizing(graph, chr_dict: dict) -> list:
+    """ Return list of normalizing peaks from one cwalk """
     cuts = []
     cwalk_length = []
     for cwalk in list(nx.connected_components(graph)):
-        cut = count_peaks(cwalk, peaks)
+        cut = count_peaks(cwalk, chr_dict)
         cuts.append(cut)
         cwalk_length.append(len(cwalk))
     return [i / j for i, j in zip(cuts, cwalk_length)]
@@ -63,9 +64,16 @@ def tf_histplot(x, y):
 
 
 def main():
+    """ Randomly create and normalize peaks to compare the histograms  """
     random_peaks = random.randint(min(tf_peaks), max(tf_peaks) + 1)  # random peaks
-    normalize = normalizing(P, tf_peaks)
-    random_normalize = normalizing(P, random_peaks)
+    random_normalize = normalizing(P, random_peaks
+    
+    normalize = []                          
+    for chr in typical_chromosomes():
+        peaks = count_peaks(cwalk, chr_dict[chr])
+        norm = normalizing(P, chrs_dict)
+        normalize.extend(norm)
+    
     tf_histplot(normalize, random_normalize)
 
 
