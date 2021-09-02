@@ -18,10 +18,13 @@ def parse_tf(tf: str) -> list:
     load transcription factor binding sites
     return: list of chromosomes and peaks peaks within them
     """
+    chrs_dict = dict()
     tf = pd.read_csv(tf, sep='\t', header=None)
     tf = tf.iloc[:, 0:3]
     tf[3] = ((tf[1] + tf[2]) / 2).astype(int)
-    return tf[0].tolist(), tf[3].tolist()
+    tf.columns = tf.columns.map(str)
+    chrs_dict = tf.groupby("0")["3"].agg(list).to_dict()
+    return chrs_dict
 
 
 def count_peaks(path: set, peaks: list) -> int:
