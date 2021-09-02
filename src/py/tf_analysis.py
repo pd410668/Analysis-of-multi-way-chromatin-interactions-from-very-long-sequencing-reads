@@ -27,13 +27,13 @@ def parse_tf(tf: str) -> list:
     return chrs_dict
 
 
-def count_peaks(path: set, peaks: list) -> int:
-    """ how many times peaks are in one cwalk """
+def count_peaks(path: set, peaks: dict) -> int:
+    """ how many times peaks from single chromosome is in one cwalk """
     cut = 0
     path = list(path)
     for node in path:
         itv = pd.Interval(node[0], node[1], closed="both")
-        for peak in peaks:
+        for peak in peaks[chr]:
             if peak in itv:
                 cut += 1
     return cut
