@@ -1,23 +1,33 @@
 #!/usr/bin/env python
 
-import pandas as pd
 import pickle
+import pandas as pd
 import networkx as nx
-import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 import random
+from filtering import typical_chromosomes
 
 
-def parse_tf(tf: str) -> list :
-    tf = pd.read_csv(tf, sep='\t', header=None)  # load transcription factor binding sites
+def load_cwalk_graph(cwalk_graph):
+    return pickle.load(open(cwalk_graph, "rb"))
+
+
+def parse_tf(tf: str) -> list:
+    """
+    load transcription factor binding sites
+    return: list of chromosomes and peaks peaks within them
+    """
+    tf = pd.read_csv(tf, sep='\t', header=None)
     tf = tf.iloc[:, 0:3]
-    tf[3] = ((tf[1] + tf[2])/2).astype(int)
-    return tf[3].tolist()
+    tf[3] = ((tf[1] + tf[2]) / 2).astype(int)
+    return tf[0].tolist(), tf[3].tolist()
 
 
-def count_cuts(path: set, peaks: list) -> int:
+def count_peaks(path: set, peaks: list) -> int:
     """ how many times peaks are in one cwalk """
     cut = 0
+    path = list(path)
     for node in path:
         itv = pd.Interval(node[0], node[1], closed="both")
         for peak in peaks:
@@ -26,30 +36,38 @@ def count_cuts(path: set, peaks: list) -> int:
     return cut
 
 
-def normalizing_cuts(graph, peaks):
+def normalizing(graph, peaks):
     cuts = []
     cwalk_length = []
     for cwalk in list(nx.connected_components(graph)):
-        cut = count_cuts(cwalk, peaks)
+        cut = count_peaks(cwalk, peaks)
         cuts.append(cut)
         cwalk_length.append(len(cwalk))
-    return [i/j for i, j in zip(cuts, cwalk_length)]
+    return [i / j for i, j in zip(cuts, cwalk_length)]
 
 
-P = pickle.load(open("cwalk.txt", "rb"))  # Load cwalks.txt file
+def tf_histplot(x, y):
+    sns.set_style("whitegrid")
+    fig, axs = plt.subplots(1, 2, sharex=True, sharey=True, tight_layout=True, figsize=(16, 9))
+    axs[0].hist(x, color="tab:blue", edgecolor="black")
+    axs[0].set_title("Peaks from data", fontsize=15)
+    axs[0].set_xlabel("Number of peaks within one cwalk", fontsize=12)
+    axs[0].set_ylabel("Number of c-walks", fontsize=15)
+    axs[1].hist(y, color="tab:green", edgecolor="black")
+    axs[1].set_title("Randomize peaks", fontsize=15)
+    axs[1].set_xlabel("Number of peaks within one cwalk", fontsize=15)
+    return plt.savefig("tf_histplot.png")
 
-tf_peaks = parse_tf("wgEncodeAwgTfbsUtaK562CtcfUniPk.narrowPeak.gz")
-random_peaks = random.randint(min(tf_peaks), max(tf_peaks) + 1)  # random peaks
 
-normalize = normalizing_cuts(P, tf_peaks)
-random_normalize = normalizing_cuts(P, random_peaks)
+def main():
+    random_peaks = random.randint(min(tf_peaks), max(tf_peaks) + 1)  # random peaks
+    normalize = normalizing(P, tf_peaks)
+    random_normalize = normalizing(P, random_peaks)
+    tf_histplot(normalize, random_normalize)
 
 
-""" Plotting """
-plt.hist(normalize)
-plt.show()
-plt.savefig("normalize.png")
-
-plt.hist(random_normalize)
-plt.show()
-plt.savefig("random_normalize.png")
+if __name__ == '__main__':
+    import sys
+    P = load_cwalk_graph(sys.argv[1])  # load .txt cwalk graph
+    chrs, tf_peaks = parse_tf(sys.argv[2])  # load CTCF binding sites
+    main()
