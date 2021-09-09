@@ -1,55 +1,79 @@
 #!/usr/bin/env python
 
-import pandas as pd
 import pickle
+import pandas as pd
 import networkx as nx
-import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 import random
+from filtering import typical_chromosomes
+import numpy as np
+import sys
 
 
-def parse_tf(tf: str) -> list :
-    tf = pd.read_csv(tf, sep='\t', header=None)  # load transcription factor binding sites
+def load_cwalk_graph(cwalk_graph):
+    return pickle.load(open(cwalk_graph, "rb"))
+
+
+def parse_tf(tf: str) -> dict:
+    """
+    load transcription factor binding sites
+    return: dict where chomosomes are keys and values are peaks within them
+    """
+    tf = pd.read_csv(tf, sep='\t', header=None)
     tf = tf.iloc[:, 0:3]
-    tf[3] = ((tf[1] + tf[2])/2).astype(int)
-    return tf[3].tolist()
+    tf[3] = ((tf[1] + tf[2]) / 2).astype(float)  # changed to float
+    tf.columns = tf.columns.map(str)
+    tf_dict = tf.groupby("0")["3"].agg(list).to_dict()
+    return tf_dict
 
 
-def count_cuts(path: set, peaks: list) -> int:
-    """ how many times peaks are in one cwalk """
+def counting(path: set) -> int:
+    """ how many times peaks are in one cwalk from single chromosome """
     cut = 0
+    path = list(path)  # [(21404672, 21405189, 'chr14'), (21403394, 21404672, 'chr14')]
     for node in path:
-        itv = pd.Interval(node[0], node[1], closed="both")
-        for peak in peaks:
-            if peak in itv:
-                cut += 1
+        if node[2] == chr:
+            itv = pd.Interval(node[0], node[1], closed="both")
+            for peak in peaks_dict[chr]:  # element in list of peaks in current chromosome
+                if peak in itv:
+                    cut += 1
     return cut
 
 
-def normalizing_cuts(graph, peaks):
-    cuts = []
-    cwalk_length = []
-    for cwalk in list(nx.connected_components(graph)):
-        cut = count_cuts(cwalk, peaks)
-        cuts.append(cut)
-        cwalk_length.append(len(cwalk))
-    return [i/j for i, j in zip(cuts, cwalk_length)]
+def tf_histplot(x, y):
+    sns.set_style("whitegrid")
+    fig, axs = plt.subplots(1, 2, sharex=True, sharey=True, tight_layout=True, figsize=(16, 9))
+    axs[0].hist(x, color="tab:blue", edgecolor="black")
+    axs[0].set_title("Peaks from data", fontsize=15)
+    axs[0].set_xlabel("Number of peaks within one cwalk", fontsize=12)
+    axs[0].set_ylabel("Number of c-walks", fontsize=15)
+    axs[1].hist(y, color="tab:green", edgecolor="black")
+    axs[1].set_title("Randomize peaks", fontsize=15)
+    axs[1].set_xlabel("Number of peaks within one cwalk", fontsize=15)
+    return plt.savefig("tf_histplot.png")
 
 
-P = pickle.load(open("cwalk.txt", "rb"))  # Load cwalks.txt file
+if __name__ == '__main__':
+    
+    P = load_cwalk_graph(sys.argv[1])  # load .txt cwalk graph
+    peaks_dict = parse_tf(sys.argv[2])  # load tf binding sites
 
-tf_peaks = parse_tf("wgEncodeAwgTfbsUtaK562CtcfUniPk.narrowPeak.gz")
-random_peaks = random.randint(min(tf_peaks), max(tf_peaks) + 1)  # random peaks
+    normalized_peaks = []
+    for chr in typical_chromosomes():
+        if chr in peaks_dict.keys():
+            for cwalk in list(nx.connected_components(P)):
+                cwalk_len = len(cwalk)
+                cut = counting(cwalk)
+                if cut != 0:  # excluded cwalks with no cuts
+                    cut = cut/cwalk_len  # normalization
+                    normalized_peaks.append(cut)
 
-normalize = normalizing_cuts(P, tf_peaks)
-random_normalize = normalizing_cuts(P, random_peaks)
+    random_peaks = np.random.uniform(low=min(normalized_peaks), high=max(normalized_peaks),
+                                     size=(len(normalized_peaks),))  # randomly create peaks for histogram
+
+    tf_histplot(normalized_peaks, random_peaks)  # histograms creation for comparison
 
 
-""" Plotting """
-plt.hist(normalize)
-plt.show()
-plt.savefig("normalize.png")
 
-plt.hist(random_normalize)
-plt.show()
-plt.savefig("random_normalize.png")
+
