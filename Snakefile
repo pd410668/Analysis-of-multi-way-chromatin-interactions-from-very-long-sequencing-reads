@@ -1,4 +1,4 @@
-	# experiment on k562 human cells
+# experiment on k562 human cells
 
 SAMPLES=["hs_k562_I_1_R1", "hs_k562_I_1_R2"] 
 RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
@@ -6,9 +6,10 @@ EXP = list(set([i.rsplit('_I')[0] for i in SAMPLES]))
 
 rule all:
 	input:
+		expand("data/cwalks/{res}_cwalks.bed", res=RES),
 		expand("data/cwalks/{res}_cwalks.txt", res=RES),
 
-		# Plots
+		# plots
 		expand("data/analysis/plots/{res}_RvsR.png", res=RES),
 		expand("data/analysis/plots/{res}_0_5000_R.png", res=RES),
 		expand("data/analysis/plots/{res}_500_10000_R.png", res=RES),
@@ -16,7 +17,9 @@ rule all:
 		expand("data/analysis/plots/{res}_0_5000_S.png", res=RES),
 		expand("data/analysis/plots/{res}_500_10000_S.png", res=RES),
 		expand("data/analysis/plots/{res}_log10_500_1000.png", res=RES),
-		expand("data/analysis/plots/{exp}_barh.png", exp=EXP)
+		expand("data/analysis/plots/{exp}_barh.png", exp=EXP),
+		expand("data/analysis/plots/human_barh.png"),
+		expand("data/analysis/plots/tf_histplot.png")
 		
 rule digestion:
 	input:
@@ -66,12 +69,29 @@ rule charts:
 		"src/py/charts.py {input} {output.RvsR_barplot} {output.dist_0_5000_R} {output.dist_500_10000_R} \
 		{output.strand_1vs2_barplot} {output.dist_0_5000_S} {output.dist_500_10000_S} {output.log10}"
 
+rule barh:
+	input:
+		"data/supportive/"
+	output:
+		"data/analysis/plots/human_barh.png"
+	shell:
+		"src/py/barh.py {input} {output}"
+
 rule cwalk:
 	input:
 		tsv = "data/supportive/{res}.tsv",
 		bed = "data/restrictions/DpnII_hg19.bed"
 	output:
-		cbed = "data/cwalks/{res}_cwalks.bed"
-		ctxt = "data/supportive/{res}_cwalks.txt"
+		cbed = "data/cwalks/{res}_cwalks.bed",
+		ctxt = "data/cwalks/{res}_cwalks.txt"
 	shell:
 		"src/py/cwalk.py {input.tsv} {input.bed} {output.cbed} {output.ctxt}"
+
+rule transcription_factor:
+	input:
+		ctxt = "data/cwalks/{res}_cwalks.txt",
+		tf = "data/factors/wgEncodeAwgTfbsUtaK562CtcfUniPk.narrowPeak.gz"
+	output:
+		"data/analysis/plots/tf_histplot.png"
+	shell:
+		"src/py/barh.py {input.ctxt} {input.tf}"
