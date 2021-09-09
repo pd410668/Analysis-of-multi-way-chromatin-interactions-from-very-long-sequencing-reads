@@ -55,7 +55,7 @@ def tf_histplot(x, y):
 
 
 if __name__ == '__main__':
-    
+
     P = load_cwalk_graph(sys.argv[1])  # load .txt cwalk graph
     peaks_dict = parse_tf(sys.argv[2])  # load tf binding sites
 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
                 cwalk_len = len(cwalk)
                 cut = counting(cwalk)
                 if cut != 0:  # excluded cwalks with no cuts
-                    cut = cut/cwalk_len  # normalization
+                    cut = cut / cwalk_len  # normalization
                     normalized_peaks.append(cut)
 
     random_peaks = np.random.uniform(low=min(normalized_peaks), high=max(normalized_peaks),
