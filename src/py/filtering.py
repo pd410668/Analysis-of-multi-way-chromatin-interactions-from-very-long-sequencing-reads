@@ -91,7 +91,8 @@ if __name__ == '__main__':
                     if filtered_alignments[i][2] in typical_chromosomes():  # removed aligns with atypical chromosomes
                         statistics = [
                             filtered_alignments[i][0],  # seqname
-                            filtered_alignments[i][2],  # chromosome
+                            filtered_alignments[i][2],  # chromosome R1
+                            filtered_alignments[j][2],  # chromosome R2
                             filtered_alignments[i][3],  # position R1
                             filtered_alignments[j][3],  # position R2
                             f"{filtered_alignments[i][5]} vs {filtered_alignments[j][5]}",  # strand_1vs2
