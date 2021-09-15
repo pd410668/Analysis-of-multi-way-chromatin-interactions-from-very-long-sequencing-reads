@@ -22,24 +22,24 @@ def count_aligns(infiles):
     rejected aligns
     and its labels.
     """
-    count, count_clean = [], []
+    data, clean_data = [], []
     for file in infiles:
-        df = pd.read_csv(f"{sys.argv[1]}/{file}", sep='\t') # load single .tsv file
+        df = pd.read_csv(f"{sys.argv[1]}/{file}", sep='\t')  # load single .tsv file
         df_clean = df.where(df.abs_pos >= 500).dropna()
         df_clean.reset_index(drop=True, inplace=True)
-        count.append(len(df.index))
-        count_clean.append(len(df_clean.index))
-        rejected = [x1 - x2 for (x1, x2) in zip(count, count_clean)]
+        data.append(len(df.index))
+        clean_data.append(len(df_clean.index))
+        rejected_data = [x1 - x2 for (x1, x2) in zip(data, clean_data)]
         labels = [file[:-4] for file in infiles]
-    return count_clean, rejected, labels
+    return clean_data, rejected_data, labels
 
 
-def barh(all_data, rejected_data, labels, name):
+def barh(clean_data, rejected_data, labels, name):
     sns.set_style("whitegrid")
     fig, ax = plt.subplots(figsize=(12, 10))
     y_pos = np.arange(len(labels))
-    ax.barh(y_pos, all_data, color="tab:blue", edgecolor="black", height=1)
-    ax.barh(y_pos, rejected_data, color="tab:red", edgecolor="black", height=1)
+    ax.barh(y_pos, clean_data, color="tab:blue", edgecolor="black", height=1)
+    ax.barh(y_pos, rejected_data, left=clean_data, color="tab:red", edgecolor="black", height=1)
     ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{0:g}".format(x / 1000000) + "M"))
     plt.yticks(y_pos, labels)
     ax.set_title("Number of useful alignments in each sample", fontsize=18)
