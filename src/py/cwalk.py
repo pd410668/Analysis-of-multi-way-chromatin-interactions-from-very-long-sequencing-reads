@@ -87,7 +87,7 @@ def main():
         tree_dict[chr] = IntervalTree.from_tuples(intervals)
 
     """ Parse C-walk positions """
-    positions = parse_positions(sys.argv[1], 500)  # .tsv file
+    positions = parse_positions(sys.argv[1], 500)  # .tsv file with selected absolute threshold
     matching_edges(tree_dict, positions)
 
     """  C-walks construction """
