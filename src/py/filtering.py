@@ -50,7 +50,7 @@ if __name__ == '__main__':
     experiment_name = sys.argv[3]
 
     """ create .tsv file with field names """
-    fieldnames = ["seqname", "chr_R1","chr_R2", "pos_R1", "pos_R2", "strand_1vs2", "RvsR", "abs_pos"]
+    fieldnames = ["seqname", "chr_R1", "chr_R2", "pos_R1", "pos_R2", "strand_1vs2", "RvsR", "abs_pos"]
     collect_data(fieldnames, experiment_name, "w")
 
     alignments_R1 = parse_bam(f"{experiment_R1}", 1)
