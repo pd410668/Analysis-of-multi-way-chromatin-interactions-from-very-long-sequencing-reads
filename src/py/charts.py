@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 
-"""
-statistics.py taking as input tsv file from filtering.py
-and return barplots and histplots
-"""
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -12,12 +7,10 @@ import matplotlib.ticker as ticker
 import sys
 
 """ load .tsv file """
-
 df = pd.read_csv(sys.argv[1], sep='\t')
 experiment_name = sys.argv[1][26:-4]
 
 """ Initiation basic dependencies """
-
 DIST_no_limit = df
 DIST_500_inf = df.where(df.abs_pos >= 500)
 DIST_0_5000 = df.where(df.abs_pos <= 5000)
@@ -31,6 +24,7 @@ df_strand_500_10000 = {x: y for x, y in DIST_500_10000.groupby("strand_1vs2")}
 
 RvsR_keys = list(df_RvsR_0_5000.keys())
 strand_keys = list(df_strand_0_5000.keys())
+
 
 def main():
     def distances_histplot(df, keys, experiment_name, name):
@@ -122,8 +116,8 @@ def main():
                title=f"Sample from {experiment_name} human cells")
         return plt.savefig(f"{name}"), plt.close()
 
+    
     """ Plotting """
-
     # RvsR
     feature_barplot(DIST_no_limit, experiment_name, "RvsR", sys.argv[2])  # "RvsR"
     distances_histplot(df_RvsR_0_5000, RvsR_keys, experiment_name, sys.argv[3])  # "0_5000_R"
