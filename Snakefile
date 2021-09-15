@@ -1,25 +1,22 @@
-# experiment on k562 human cells
-
-SAMPLES=["hs_k562_I_1_R1", "hs_k562_I_1_R2"] 
+SAMPLES=["hs_k562_I_4_R1", "hs_k562_I_4_R2"]
+MOUSE_SAMPLES = [] 
 RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
 EXP = list(set([i.rsplit('_I')[0] for i in SAMPLES]))
+ORG = ["human, mouse"]
 
 rule all:
 	input:
-		expand("data/cwalks/{res}_cwalks.bed", res=RES),
-		expand("data/cwalks/{res}_cwalks.txt", res=RES),
-
-		# plots
-		expand("data/analysis/plots/{res}_RvsR.png", res=RES),
-		expand("data/analysis/plots/{res}_0_5000_R.png", res=RES),
-		expand("data/analysis/plots/{res}_500_10000_R.png", res=RES),
-		expand("data/analysis/plots/{res}_strand_1vs2.png", res=RES),
-		expand("data/analysis/plots/{res}_0_5000_S.png", res=RES),
-		expand("data/analysis/plots/{res}_500_10000_S.png", res=RES),
-		expand("data/analysis/plots/{res}_log10_500_1000.png", res=RES),
-		expand("data/analysis/plots/{exp}_barh.png", exp=EXP),
-		expand("data/analysis/plots/human_barh.png"),
-		expand("data/analysis/plots/tf_histplot.png")
+		expand("data/cwalks/human/bed/{res}_cwalks.bed", res=RES),
+		expand("data/cwalks/human/txt/{res}_cwalks.txt", res=RES),
+		# charts
+		expand("data/analysis/charts/{res}_RvsR.png", res=RES),
+		expand("data/analysis/charts/{res}_0_5000_R.png", res=RES),
+		expand("data/analysis/charts/{res}_500_10000_R.png", res=RES),
+		expand("data/analysis/charts/{res}_strand_1vs2.png", res=RES),
+		expand("data/analysis/charts/{res}_0_5000_S.png", res=RES),
+		expand("data/analysis/charts/{res}_500_10000_S.png", res=RES),
+		expand("data/analysis/charts/{res}_log10_500_1000.png", res=RES),
+		expand("data/analysis/charts/human_barh.png") # remove the graph every time you run the snakefile
 		
 rule digestion:
 	input:
@@ -50,48 +47,51 @@ rule filtering:
 	input:
 		expand("data/bam/{sample}.bowtie2.bam", sample=SAMPLES)
 	output:
-		"data/supportive/{res}.tsv"
+		"data/supportive/human/{res}.tsv"
 	shell:
 		"src/py/filtering.py {input} {output}"
 
+rule barh:
+	input:
+		# expand("data/supportive/{org}", org=ORG)
+		"data/supportive/human"
+	output:
+		# "data/analysis/charts/{org}_barh.png"
+		"data/analysis/charts/human_barh.png"
+	shell:
+		"src/py/barh.py {input} {output}"
+
 rule charts:
 	input:
-		"data/supportive/{res}.tsv"
+		"data/supportive/human/{res}.tsv"
 	output:
-		RvsR_barplot = "data/analysis/plots/{res}_RvsR.png",
-		dist_0_5000_R = "data/analysis/plots/{res}_0_5000_R.png",
-		dist_500_10000_R = "data/analysis/plots/{res}_500_10000_R.png",
-		strand_1vs2_barplot = "data/analysis/plots/{res}_strand_1vs2.png",
-		dist_0_5000_S = "data/analysis/plots/{res}_0_5000_S.png",
-		dist_500_10000_S = "data/analysis/plots/{res}_500_10000_S.png",
-		log10 = "data/analysis/plots/{res}_log10_500_1000.png"
+		RvsR_barplot = "data/analysis/charts/{res}_RvsR.png",
+		dist_0_5000_R = "data/analysis/charts/{res}_0_5000_R.png",
+		dist_500_10000_R = "data/analysis/charts/{res}_500_10000_R.png",
+		strand_1vs2_barplot = "data/analysis/charts/{res}_strand_1vs2.png",
+		dist_0_5000_S = "data/analysis/charts/{res}_0_5000_S.png",
+		dist_500_10000_S = "data/analysis/charts/{res}_500_10000_S.png",
+		log10 = "data/analysis/charts/{res}_log10_500_1000.png"
 	shell:
 		"src/py/charts.py {input} {output.RvsR_barplot} {output.dist_0_5000_R} {output.dist_500_10000_R} \
 		{output.strand_1vs2_barplot} {output.dist_0_5000_S} {output.dist_500_10000_S} {output.log10}"
 
-rule barh:
-	input:
-		"data/supportive/"
-	output:
-		"data/analysis/plots/human_barh.png"
-	shell:
-		"src/py/barh.py {input} {output}"
 
 rule cwalk:
 	input:
-		tsv = "data/supportive/{res}.tsv",
-		bed = "data/restrictions/DpnII_hg19.bed"
+		tsvfile = "data/supportive/human/{res}.tsv",
+		bedfile = "data/restrictions/DpnII_hg19.bed"
 	output:
-		cbed = "data/cwalks/{res}_cwalks.bed",
-		ctxt = "data/cwalks/{res}_cwalks.txt"
+		cwalkbed = "data/cwalks/human/bed/{res}_cwalks.bed",
+		cwalktxt = "data/cwalks/human/txt/{res}_cwalks.txt"
 	shell:
-		"src/py/cwalk.py {input.tsv} {input.bed} {output.cbed} {output.ctxt}"
+		"src/py/cwalk.py {input.tsvfile} {input.bedfile} {output.cwalkbed} {output.cwalktxt}"
 
-rule transcription_factor:
-	input:
-		ctxt = "data/cwalks/{res}_cwalks.txt",
-		tf = "data/factors/wgEncodeAwgTfbsUtaK562CtcfUniPk.narrowPeak.gz"
-	output:
-		"data/analysis/plots/tf_histplot.png"
-	shell:
-		"src/py/barh.py {input.ctxt} {input.tf}"
+# rule transcription_factor:
+# 	input:
+# 		ctxt = "data/cwalks/{res}_cwalks.txt",
+# 		tf = "data/factors/wgEncodeAwgTfbsUtaK562CtcfUniPk.narrowPeak.gz"
+# 	output:
+# 		"data/analysis/charts/tf_histplot.png"
+# 	shell:
+# 		"src/py/barh.py {input.ctxt} {input.tf}"
