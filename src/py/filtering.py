@@ -36,9 +36,9 @@ def collect_data(data, experiment_name, WvsA):
         tsv_output.writerow(data)
 
 
-def typical_chromosomes() -> list:
-    """ return list of typical chromosomes """
-    chrs = [f"chr{i}" for i in range(1, 23)]
+def typical_chromosomes(organism) -> list:
+    """ return list of typical chromosomes for human or mouse """
+    chrs = [f"chr{i}" for i in range(1, 23)] if organism == "human" else [f"chr{i}" for i in range(1, 20)]
     chrs.extend(["chrX", "chrY"])
     return chrs
 
