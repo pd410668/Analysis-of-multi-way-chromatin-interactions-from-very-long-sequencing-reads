@@ -1,4 +1,4 @@
-SAMPLES=["hs_k562_I_4_R1", "hs_k562_I_4_R2"]
+SAMPLES=["hs_k562_I_5_R1", "hs_k562_I_5_R2"]
 MOUSE_SAMPLES = [] 
 RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
 EXP = list(set([i.rsplit('_I')[0] for i in SAMPLES]))
@@ -9,14 +9,14 @@ rule all:
 		expand("data/cwalks/human/bed/{res}_cwalks.bed", res=RES),
 		expand("data/cwalks/human/txt/{res}_cwalks.txt", res=RES),
 		# charts
-		expand("data/analysis/charts/{res}_RvsR.png", res=RES),
-		expand("data/analysis/charts/{res}_0_5000_R.png", res=RES),
-		expand("data/analysis/charts/{res}_500_10000_R.png", res=RES),
-		expand("data/analysis/charts/{res}_strand_1vs2.png", res=RES),
-		expand("data/analysis/charts/{res}_0_5000_S.png", res=RES),
-		expand("data/analysis/charts/{res}_500_10000_S.png", res=RES),
-		expand("data/analysis/charts/{res}_log10_500_1000.png", res=RES),
-		expand("data/analysis/charts/human_barh.png") # remove the graph every time you run the snakefile
+		expand("data/analysis/charts/human/{res}_RvsR.png", res=RES),
+		expand("data/analysis/charts/human/{res}_0_5000_R.png", res=RES),
+		expand("data/analysis/charts/human/{res}_500_10000_R.png", res=RES),
+		expand("data/analysis/charts/human/{res}_strand_1vs2.png", res=RES),
+		expand("data/analysis/charts/human/{res}_0_5000_S.png", res=RES),
+		expand("data/analysis/charts/human/{res}_500_10000_S.png", res=RES),
+		expand("data/analysis/charts/human/{res}_log10_500_1000.png", res=RES),
+		expand("data/analysis/charts/human/human_barh.png") # remove the graph every time you run the snakefile
 		
 rule digestion:
 	input:
@@ -57,7 +57,7 @@ rule barh:
 		"data/supportive/human"
 	output:
 		# "data/analysis/charts/{org}_barh.png"
-		"data/analysis/charts/human_barh.png"
+		"data/analysis/charts/human/human_barh.png"
 	shell:
 		"src/py/barh.py {input} {output}"
 
@@ -65,13 +65,13 @@ rule charts:
 	input:
 		"data/supportive/human/{res}.tsv"
 	output:
-		RvsR_barplot = "data/analysis/charts/{res}_RvsR.png",
-		dist_0_5000_R = "data/analysis/charts/{res}_0_5000_R.png",
-		dist_500_10000_R = "data/analysis/charts/{res}_500_10000_R.png",
-		strand_1vs2_barplot = "data/analysis/charts/{res}_strand_1vs2.png",
-		dist_0_5000_S = "data/analysis/charts/{res}_0_5000_S.png",
-		dist_500_10000_S = "data/analysis/charts/{res}_500_10000_S.png",
-		log10 = "data/analysis/charts/{res}_log10_500_1000.png"
+		RvsR_barplot = "data/analysis/charts/human/{res}_RvsR.png",
+		dist_0_5000_R = "data/analysis/charts/human/{res}_0_5000_R.png",
+		dist_500_10000_R = "data/analysis/charts/human/{res}_500_10000_R.png",
+		strand_1vs2_barplot = "data/analysis/charts/human/{res}_strand_1vs2.png",
+		dist_0_5000_S = "data/analysis/charts/human/{res}_0_5000_S.png",
+		dist_500_10000_S = "data/analysis/charts/human/{res}_500_10000_S.png",
+		log10 = "data/analysis/charts/human/{res}_log10_500_1000.png"
 	shell:
 		"src/py/charts.py {input} {output.RvsR_barplot} {output.dist_0_5000_R} {output.dist_500_10000_R} \
 		{output.strand_1vs2_barplot} {output.dist_0_5000_S} {output.dist_500_10000_S} {output.log10}"
