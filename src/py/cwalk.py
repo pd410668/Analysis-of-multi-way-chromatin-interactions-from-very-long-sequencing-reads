@@ -12,7 +12,7 @@ def parse_positions(tsvfile: str, abs_threshold: int) -> zip:
     """ Returns lists of positions of aligns that are apart selected absolute threshold """
     df = pd.read_csv(tsvfile, sep='\t')
     df = df.where(df.abs_pos >= abs_threshold).dropna().reset_index(drop=True)
-    return zip(df.chr.tolist(), df.pos_R1.tolist(), df.pos_R2.tolist())
+    return zip(df.chr_R1.tolist(), df.pos_R1.tolist(), df.pos_R2.tolist())  # positions only from one chromosome was taking into consideration 
 
 
 def read_bedfile(bedfile: str, chromosome: str) -> list:
