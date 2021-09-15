@@ -34,23 +34,23 @@ def collect_data(data, experiment_name, WvsA):
     with open(f"{experiment_name}", WvsA, newline='') as outfile:
         tsv_output = csv.writer(outfile, delimiter='\t')
         tsv_output.writerow(data)
-      
-    
+
+
 def typical_chromosomes() -> list:
     """ return list of typical chromosomes """
     chrs = [f"chr{i}" for i in range(1, 23)]
     chrs.extend(["chrX", "chrY"])
     return chrs
-     
-    
+
+
 if __name__ == '__main__':
-    
+
     experiment_R1 = sys.argv[1]
     experiment_R2 = sys.argv[2]
     experiment_name = sys.argv[3]
 
     """ create .tsv file with field names """
-    fieldnames = ["seqname", "chr", "pos_R1", "pos_R2", "strand_1vs2", "RvsR", "abs_pos"]
+    fieldnames = ["seqname", "chr_R1","chr_R2", "pos_R1", "pos_R2", "strand_1vs2", "RvsR", "abs_pos"]
     collect_data(fieldnames, experiment_name, "w")
 
     alignments_R1 = parse_bam(f"{experiment_R1}", 1)
@@ -100,4 +100,4 @@ if __name__ == '__main__':
                             abs(filtered_alignments[i][3] - filtered_alignments[j][3])      # abs_pos
                         ]
                         """ appends aligns to created .tsv file """
-                        collect_data(statistics, experiment_name, "a")               
+                        collect_data(statistics, experiment_name, "a")
