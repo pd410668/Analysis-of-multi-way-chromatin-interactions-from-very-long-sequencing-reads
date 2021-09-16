@@ -3,37 +3,31 @@
 import sys
 from tf import load_cwalk_graph
 import networkx as nx
+import statistics
 
 
-def directivity(path: list):
-    path = [node[0] for node in path]  # the distance is between the firsts points of the restriction intervals
-    distance = [(a - b) for a, b in zip(path, path[1:])]
-    distances.extend(distance)
+def directionality(path: list) -> bool:
+    path = [node[0] for node in path] # the distance is between the firsts points of the restriction intervals
+    dist = [b - a for a, b in zip(path[:-1], path[1:])]
+    same_sign_dist = [(a * b >= 0) for a, b in zip(dist[:-1], dist[1:])]
+    # 0 if nodes are in the same restriction interval
+    return same_sign_dist
 
-    # Directivity for each walks separately
-    direct = [1 if dist > 0 else 0 for dist in distance]
-    directs.append(direct)
 
-    return distances, directs
+def avg_directionality(signs: list) -> float:
+    return round(statistics.mean(signs), 2)
 
 
 P = load_cwalk_graph("hs_k562_I_1_cwalks.txt")  # load .txt cwalk graph
 
-distances = []
-directs = []
-for cwalk in list(nx.connected_components(P)):
-    cwalk = list(cwalk)  # [(21404672, 21405189, 'chr14'), (21403394, 21404672, 'chr14')]
-    distances, directs = directivity(cwalk)
+signs = [directionality(list(cwalk)) for cwalk in list(nx.connected_components(P))]  # list of lists of bool values
+avg_signs = [avg_directionality(sign) for sign in signs]  # list of average value of directivity
 
-
-# Directivity for all cwalks
 plus, minus = 0, 0
-for dist in distances:
-    if dist > 0:
+for avg_sign in avg_signs:
+    if avg_sign > 0.5:
         plus += 1
     else:
         minus += 1
 
-print(distances)  # [57, -648, -1278, 3010850, -628562, -30661, -855, -8394 ...]
-print(directs)  # [[1, 1, 0], [1, 0], [0, 1], [0, 1, 0], [0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1]]
-print(plus, minus)  # 7993 8019
+print(plus, minus)  # 942 3461
