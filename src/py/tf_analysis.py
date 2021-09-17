@@ -28,6 +28,21 @@ def parse_tf(tf: str) -> dict:
     return tf_dict
 
 
+def mirror_peaks(chr_sizes: str) -> dict:
+    """ Mirror image of peaks """
+    df_sizes = pd.read_csv(chr_sizes, sep='\t', header=None)
+    df_sizes = df_sizes.loc[df_sizes[0].isin(typical_chromosomes())].reset_index(drop=True)
+    df_sizes.columns = df_sizes.columns.map(str)
+    sizes_dict = df_sizes.groupby("0")["1"].agg(list).to_dict()
+    
+    keys, mirrors = [], []
+    for key in peaks_dict.keys():
+        mirror = [sizes_dict[key][0] - peak for peak in peaks_dict[key]]
+        keys.append(key)
+        mirrors.append(mirror)
+    return dict(zip(keys, mirrors))
+
+
 def counting(path: set) -> int:
     """ how many times peaks are in one cwalk from single chromosome """
     cut = 0
