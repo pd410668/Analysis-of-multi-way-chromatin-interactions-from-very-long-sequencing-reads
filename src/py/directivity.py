@@ -25,9 +25,19 @@ avg_signs = [avg_directionality(sign) for sign in signs]  # list of average valu
 
 plus, minus = 0, 0
 for avg_sign in avg_signs:
-    if avg_sign > 0.5:
+    if avg_sign >= 0.5:
         plus += 1
     else:
         minus += 1
 
-print(plus, minus)  # 942 3461
+print(plus, minus)  # 1571 2832
+
+# Student’s t-Test for independent samples
+chunks_plus = [x for x in avg_signs if x >= 0.5]
+chunks_minus = [x for x in avg_signs if x < 0.5]
+
+var_plus = round(statistics.variance(chunks_plus), 2)  # 0.05
+var_minus = round(statistics.variance(chunks_minus), 2)  # 0,02
+
+t_test = scipy.stats.ttest_ind(chunks_plus, chunks_minus, equal_var=False)
+print(t_test)  # Ttest_indResult(statistic=105.92401155048114, pvalue=0.0), the averages are significantly different
