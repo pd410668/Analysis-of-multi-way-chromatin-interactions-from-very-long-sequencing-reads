@@ -1,8 +1,6 @@
 SAMPLES=["hs_k562_I_5_R1", "hs_k562_I_5_R2"]
-MOUSE_SAMPLES = [] 
 RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
 EXP = list(set([i.rsplit('_I')[0] for i in SAMPLES]))
-ORG = ["human, mouse"]
 
 rule all:
 	input:
@@ -20,7 +18,7 @@ rule all:
 		
 rule digestion:
 	input:
-		"data/fastq/k562/hs_k562/{sample}.fastq"
+		"data/fastq/k562/{sample}.fastq"
 	output:
 		"data/fastq_digested/{sample}.digested.fastq"
 	shell:
@@ -53,10 +51,8 @@ rule filtering:
 
 rule barh:
 	input:
-		# expand("data/supportive/{org}", org=ORG)
 		"data/supportive/human"
 	output:
-		# "data/analysis/charts/{org}_barh.png"
 		"data/analysis/charts/human/human_barh.png"
 	shell:
 		"src/py/barh.py {input} {output}"
