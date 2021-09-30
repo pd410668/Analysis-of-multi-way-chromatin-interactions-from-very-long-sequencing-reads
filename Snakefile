@@ -1,4 +1,4 @@
-SAMPLES=["hs_k562_I_5_R1", "hs_k562_I_5_R2"]
+SAMPLES=["hs_k562_I_6_R1", "hs_k562_I_6_R2"]
 RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
 EXP = list(set([i.rsplit('_I')[0] for i in SAMPLES]))
 
