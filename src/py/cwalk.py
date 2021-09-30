@@ -18,7 +18,7 @@ def parse_positions(tsvfile: str, abs_threshold: int) -> zip:
 def read_bedfile(bedfile: str, chromosome: str) -> list:
     """ Return lists of restrictions sites positions and chromosomes where they were found """
     df = pd.read_csv(bedfile, sep="\t", header=None)
-    df = df.loc[df[0].isin(typical_chromosomes())].reset_index(drop=True)
+    df = df.loc[df[0].isin(typical_chromosomes("human"))].reset_index(drop=True)
     df = df.where(df[0] == chromosome).dropna().reset_index(drop=True)
     df[1] = df[1].astype(int)
     chr = df[0].tolist()
@@ -80,7 +80,7 @@ def save_as_bed(graph, experiment_name):
 
 def main():
     tree_dict = dict()  # ex. tree_dict["chr1"] will be an object of type IntervalTree
-    for chr in typical_chromosomes():
+    for chr in typical_chromosomes("human"):
         """ Interval tree construction, separate for each chromosome """
         restrictions, chromosomes = read_bedfile(sys.argv[2], chr)  # .bed file
         intervals = [(i, j) for i, j in zip(restrictions[:-1], restrictions[1:])]
