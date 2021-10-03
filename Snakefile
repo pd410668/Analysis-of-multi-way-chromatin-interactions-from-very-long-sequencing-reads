@@ -15,10 +15,7 @@ rule all:
 		expand("data/analysis/charts/human/{res}_0_5000_S.png", res=RES),
 		expand("data/analysis/charts/human/{res}_500_10000_S.png", res=RES),
 		expand("data/analysis/charts/human/{res}_log10_500_1000.png", res=RES),
-		expand("data/analysis/charts/human/human_barh.png"),
-		expand("data/analysis/hist_cwalks.png"),
-		expand("data/analysis/barh_cwalks.png"),
-		expand("data/analysis/basic_cwalk_statistics.tsv")
+		expand("data/analysis/charts/human/human_barh.png")
 
 rule digestion:
 	input:
@@ -91,17 +88,6 @@ rule cwalks_analysis:
 	input:
 		"data/cwalks/human/txt"
 	output:
-		hist = "data/analysis/hist_cwalks.png",
-		barh = "data/analysis/barh_cwalks.png",
-		stat = "data/analysis/basic_cwalk_statistics.tsv"
+		"data/analysis/cwalks/cwalks"
 	shell:
-		"src/py/cwalk.py {input} {output.hist} {output.barh} {output.stat}"
-
-# rule transcription_factor:
-# 	input:
-# 		ctxt = "data/cwalks/{res}_cwalks.txt",
-# 		tf = "data/factors/wgEncodeAwgTfbsUtaK562CtcfUniPk.narrowPeak.gz"
-# 	output:
-# 		"data/analysis/charts/tf_histplot.png"
-# 	shell:
-# 		"src/py/barh.py {input.ctxt} {input.tf}"
+		"src/py/cwalk.py {input} {output}"
