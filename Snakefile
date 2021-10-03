@@ -1,4 +1,4 @@
-SAMPLES=["hs_k562_I_6_R1", "hs_k562_I_6_R2"]
+SAMPLES=["hs_k562_II_10_R1", "hs_k562_II_10_R2"]
 RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
 EXP = list(set([i.rsplit('_I')[0] for i in SAMPLES]))
 
@@ -6,6 +6,7 @@ rule all:
 	input:
 		expand("data/cwalks/human/bed/{res}_cwalks.bed", res=RES),
 		expand("data/cwalks/human/txt/{res}_cwalks.txt", res=RES),
+		
 		# charts
 		expand("data/analysis/charts/human/{res}_RvsR.png", res=RES),
 		expand("data/analysis/charts/human/{res}_0_5000_R.png", res=RES),
@@ -14,13 +15,16 @@ rule all:
 		expand("data/analysis/charts/human/{res}_0_5000_S.png", res=RES),
 		expand("data/analysis/charts/human/{res}_500_10000_S.png", res=RES),
 		expand("data/analysis/charts/human/{res}_log10_500_1000.png", res=RES),
-		expand("data/analysis/charts/human/human_barh.png") # remove the graph every time you run the snakefile
-		
+		expand("data/analysis/charts/human/human_barh.png"),
+		expand("data/analysis/hist_cwalks.png"),
+		expand("data/analysis/barh_cwalks.png"),
+		expand("data/analysis/basic_cwalk_statistics.tsv")
+
 rule digestion:
 	input:
 		"data/fastq/k562/{sample}.fastq"
 	output:
-		"data/fastq_digested/{sample}.digested.fastq"
+		"data/digested/{sample}.digested.fastq"
 	shell:
 		"src/py/digestion.py {input} {output}"
 
@@ -82,6 +86,16 @@ rule cwalk:
 		cwalktxt = "data/cwalks/human/txt/{res}_cwalks.txt"
 	shell:
 		"src/py/cwalk.py {input.tsvfile} {input.bedfile} {output.cwalkbed} {output.cwalktxt}"
+
+rule cwalks_analysis:
+	input:
+		"data/cwalks/human/txt"
+	output:
+		hist = "data/analysis/hist_cwalks.png",
+		barh = "data/analysis/barh_cwalks.png",
+		stat = "data/analysis/basic_cwalk_statistics.tsv"
+	shell:
+		"src/py/cwalk.py {input} {output.hist} {output.barh} {output.stat}"
 
 # rule transcription_factor:
 # 	input:
