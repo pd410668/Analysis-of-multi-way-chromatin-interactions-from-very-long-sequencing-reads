@@ -65,7 +65,7 @@ def main():
             cwalks_length.append(len(list(cwalk)))
 
     # Save as .tsv basic statistics
-    collect_data(["average", "median", "mode", "standard deviation"], "cwalks.tsv", "w")
+    collect_data(["average", "median", "mode", "standard deviation"], sys.argv[4], "w")
     collect_data([round(statistics.mean(cwalks_length), 2),
                   round(statistics.median(cwalks_length), 2),
                   statistics.mode(cwalks_length),
