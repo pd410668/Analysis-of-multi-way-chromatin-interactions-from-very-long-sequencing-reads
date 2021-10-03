@@ -43,7 +43,7 @@ def histogram(data):
     ax1.set_ylabel("Frequency of occurrence", fontsize=16)
     ax2.set_xlabel("C-walk length", fontsize=16)
     ax2.set_ylabel("Frequency of occurrence", fontsize=16)
-    return plt.savefig("hist_cwalks.png"), plt.close()
+    return plt.savefig(f"{sys.argv[2]}_hist.png"), plt.close()
 
 
 def barh(data, labels):
@@ -52,7 +52,7 @@ def barh(data, labels):
     ax.barh([label[:-11] for label in labels], data, color="tab:blue", edgecolor="black")
     ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{0:g}".format(x / 1000) + "k"))
     ax.set_title("Number of c-walks in each graph", fontsize=18)
-    return plt.savefig("barh_cwalks.png"), plt.close()
+    return plt.savefig(f"{sys.argv[2]}_barh.png"), plt.close()
 
 
 def main():
@@ -69,7 +69,7 @@ def main():
     collect_data([round(statistics.mean(cwalks_length), 2),
                   round(statistics.median(cwalks_length), 2),
                   statistics.mode(cwalks_length),
-                  round(statistics.stdev(cwalks_length), 2)], "basic_cwalks_statistics.tsv", "a")  # "cwalks.tsv"
+                  round(statistics.stdev(cwalks_length), 2)], f"{sys.argv[2]}_basic_statistics.tsv", "a")  # "cwalks.tsv"
 
     histogram(cwalks_length)
     barh(cwalks_number, labels)
