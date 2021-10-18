@@ -24,30 +24,39 @@ def avg_directionality(signs: list) -> float:
     return round(statistics.mean(signs), 2)
 
 
-graphs, _ = load_files("./cwalks", load_cwalk_graph)  # load .txt cwalk graph
-
-directions = []
-directions_avg = []
-for graph in graphs:
-    signs = [directionality(list(cwalk)) for cwalk in list(nx.connected_components(graph))]
-    avg_signs = [avg_directionality(sign) for sign in signs]
-    directions_avg.extend(avg_signs)
-    flat_signs = [sign for sublist in signs for sign in sublist]
-    directions.extend(flat_signs)
-
-
-avg_sign = avg_directionality(directions)  # list of average value of directivity
-print(avg_sign)  # 0.33 - avg from one list from all cwalks graphs
-print(statistics.mean(directions_avg))  # 0.33
-
-
-def hist(data):
+def hist(data, name, avg):
     sns.set_style("whitegrid")
     fig, ax = plt.subplots(figsize=(10, 8))
     plt.hist(data, color="cornflowerblue", edgecolor="black")
-    ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{0:g}".format(x / 1000) + "k"))
-    ax.set_title("Distribution of directivity of all cwalks", fontsize=18)
-    return plt.savefig("directivity.png"), plt.close()
+    if len(data) >= 1000:
+        ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{0:g}".format(x / 1000) + "k"))
+    ax.set_title(f"Distribution of directivity of cwalks with {name} length. \n "
+                 f"Average value of directivity is {avg}.", fontsize=18)
+    return plt.savefig(f"directivity_{name}.png"), plt.close()
 
 
-hist(directions_avg)
+graphs, _ = load_files("./cwalks", load_cwalk_graph)  # load .txt cwalk graph
+
+duplicate_cwalk_length = []
+for graph in graphs:
+    for cwalk in list(nx.connected_components(graph)):
+        duplicate_cwalk_length.append(len(cwalk))
+cwalk_length = list(set(duplicate_cwalk_length))  # list with all possible length of cwalks in each graph
+
+for each in cwalk_length:
+    print(each, duplicate_cwalk_length.count(each))
+
+for length in range(min(cwalk_length), max(cwalk_length) + 1):
+    print(length)
+    directions_avg = []
+    directions = []
+    numbers = []
+    for graph in graphs:
+        signs = [directionality(list(cwalk)) for cwalk in list(nx.connected_components(graph)) if len(cwalk) == length]
+        avg_signs = [avg_directionality(sign) for sign in signs]
+        directions_avg.extend(avg_signs)
+        flat_signs = [sign for sublist in signs for sign in sublist]
+        directions.extend(flat_signs)
+
+    avg_sign = avg_directionality(directions)  # list of average value of directivity
+    hist(directions_avg, length, avg_sign)
