@@ -20,19 +20,40 @@ def tad_boundaries(bedfile: str) -> dict:
     return dict(zip(keys, values))
 
 
-graphs, _ = load_files("./cwalks", load_cwalk_graph)  # load .txt cwalk graph
-boundaries_dict = tad_boundaries("K562_Lieberman-raw_TADs.bed")
+def main():
+    graphs, _ = load_files("./cwalks", load_cwalk_graph)  # load .txt cwalk graph
+    boundaries_dict = tad_boundaries("K562_Lieberman-raw_TADs.bed")
 
-# prove that cwalks are in TAD boundaries
-tree_dict = dict()  # ex. tree_dict["chr1"] will be an object of type IntervalTree
-for key in boundaries_dict.keys():
-    intervals = boundaries_dict[key]
-    # Interval tree construction, separate for each chromosome
-    tree_dict[key] = IntervalTree.from_tuples(intervals)
+    # prove that cwalks are in TAD boundaries
+    tree_dict = dict()  # ex. tree_dict["chr1"] will be an object of type IntervalTree
+    for key in boundaries_dict.keys():
+        intervals = boundaries_dict[key]
+        # Interval tree construction, separate for each chromosome
+        tree_dict[key] = IntervalTree.from_tuples(intervals)
 
-for graph in graphs:
-    for cwalk in list(nx.connected_components(graph)):
-        cwalk = list(cwalk)
-        cwalk_boundaries = [Interval(node[0], node[1]) for node in cwalk]
-        print(cwalk_boundaries)
+    out_tad = 0
+    graphs_number = 0
+    cwalks_number = []
 
+    for graph in graphs:
+        graphs_number += 1
+        cwalks_number.append(nx.number_connected_components(graph))
+        for cwalk in list(nx.connected_components(graph)):
+            cwalk = list(cwalk)
+            if cwalk[0][2] == "chrY":
+                out_tad += 1
+            else:
+                cwalk_boundaries = [[node[0], node[1]] for node in cwalk]
+                in_tad = [tree_dict[cwalk[0][2]][bound] for node in cwalk_boundaries for bound in node]
+
+                if len(in_tad) != 2 * len(cwalk_boundaries):  # if the same length, that is each node include in TAD boundaries
+                    out_tad += 1
+
+    print(f"In summary from each {graphs_number} graphs, we have {sum(cwalks_number)} cwalks from which {out_tad}"
+          f" are outside TAD boundaries")
+
+
+if __name__ == '__main__':
+    main()
+    # In summary from each 37 graphs, we have 319577 cwalks from which 2 are outside TAD boundaries
+    
