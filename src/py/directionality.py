@@ -12,6 +12,12 @@ import matplotlib.ticker as ticker
 from cwalks_analysis import load_cwalk_graph, load_files
 
 
+def permutation(path: list) -> list:
+    import itertools
+    import random
+    return list(random.choice(list(itertools.permutations(path))))
+
+
 def directionality(path: list) -> bool:
     path = [node[0] for node in path]  # the distance is between the firsts points of the restriction intervals
     dist = [b - a for a, b in zip(path[:-1], path[1:])]
@@ -48,15 +54,27 @@ for each in cwalk_length:
 
 for length in range(min(cwalk_length), max(cwalk_length) + 1):
     print(length)
-    directions_avg = []
-    directions = []
-    numbers = []
-    for graph in graphs:
-        signs = [directionality(list(cwalk)) for cwalk in list(nx.connected_components(graph)) if len(cwalk) == length]
-        avg_signs = [avg_directionality(sign) for sign in signs]
-        directions_avg.extend(avg_signs)
-        flat_signs = [sign for sublist in signs for sign in sublist]
-        directions.extend(flat_signs)
 
-    avg_sign = avg_directionality(directions)  # list of average value of directivity
-    hist(directions_avg, length, avg_sign)
+    avg_signs_shuffle = []
+    avg_signs = []
+
+    for graph in graphs:
+        for cwalk in list(nx.connected_components(graph)):
+            if len(cwalk) == length:
+                cwalk = list(cwalk)
+                
+                sign = directionality(cwalk)
+                avg_sign = avg_directionality(sign)
+                
+                random.shuffle(cwalk)
+                sign_shuffle = directionality(cwalk)
+                avg_sign_shuffle = avg_directionality(sign_shuffle)
+                
+                avg_signs.append(avg_sign)
+                avg_signs_shuffle.append(avg_sign_shuffle)
+
+    if avg_signs:
+
+        print(round(statistics.mean(avg_signs), 2))  # 0.33
+        print(round(statistics.mean(avg_signs_shuffle), 2))  # 0.33
+        hist(avg_signs_shuffle, length, round(statistics.mean(avg_signs_shuffle), 2))
