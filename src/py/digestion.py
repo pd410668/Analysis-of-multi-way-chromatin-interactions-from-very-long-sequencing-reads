@@ -17,16 +17,12 @@ def division(i, seq, positions) -> str:
 def digest(input_reads) -> zip:
     sub_title, sub_seq, sub_qual = [], [], []
     for title, seq, qual in input_reads:
-        positions = [i for i in range(len(seq)) if seq.startswith("GATC", i)]
-        if positions and positions[0] == 0:
-            positions.pop(0)
-            if positions:
-                for i in range(0, len(positions)+1):
-                    sub_title.append(f"{i}.{title}")
-                    sub_seq.append(division(i, seq, positions))
-                    sub_qual.append(division(i, qual, positions))
-            else:
-                sub_title.append(title), sub_seq.append(seq), sub_qual.append(qual)
+        positions = [i for i in range(len(seq)) if seq.startswith("GATC", i) if i != 0]
+        if positions:
+            for i in range(0, len(positions)+1):
+                sub_title.append(f"{i}.{title}")
+                sub_seq.append(division(i, seq, positions))
+                sub_qual.append(division(i, qual, positions))
         else:
             sub_title.append(title), sub_seq.append(seq), sub_qual.append(qual)
     return zip(sub_title, sub_seq, sub_qual)
