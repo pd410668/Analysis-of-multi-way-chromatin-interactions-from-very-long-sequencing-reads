@@ -8,7 +8,7 @@ import sys
 
 """ load .tsv file """
 df = pd.read_csv(sys.argv[1], sep='\t')
-experiment_name = sys.argv[1][23:-4]
+experiment_name = sys.argv[1][21:-4]
 
 """ Initiation basic dependencies """
 DIST_no_limit = df
