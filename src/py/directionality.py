@@ -12,12 +12,6 @@ import matplotlib.ticker as ticker
 from cwalks_analysis import load_cwalk_graph, load_files
 
 
-def permutation(path: list) -> list:
-    import itertools
-    import random
-    return list(random.choice(list(itertools.permutations(path))))
-
-
 def directionality(path: list) -> bool:
     path = [node[0] for node in path]  # the distance is between the firsts points of the restriction intervals
     dist = [b - a for a, b in zip(path[:-1], path[1:])]
@@ -78,90 +72,3 @@ for length in range(min(cwalk_length), max(cwalk_length) + 1):
         print(round(statistics.mean(avg_signs), 2))  # 0.33
         print(round(statistics.mean(avg_signs_shuffle), 2))  # 0.33
         hist(avg_signs_shuffle, length, round(statistics.mean(avg_signs_shuffle), 2))
-        
-"""
-3
-0.33
-0.33
-4
-0.33
-0.33
-5
-0.33
-0.33
-6
-0.33
-0.33
-7
-0.33
-0.33
-8
-0.33
-0.33
-9
-0.34
-0.33
-10
-0.34
-0.33
-11
-0.34
-0.33
-12
-0.33
-0.34
-13
-0.33
-0.34
-14
-0.33
-0.32
-15
-0.34
-0.33
-16
-0.33
-0.34
-17
-0.32
-0.34
-18
-0.33
-0.34
-19
-0.34
-0.33
-20
-0.33
-0.32
-21
-0.36
-0.32
-22
-0.3
-0.33
-23
-0.36
-0.33
-24
-0.34
-0.33
-25
-0.33
-0.31
-26
-0.29
-0.29
-27
-0.44
-0.32
-28
-0.27
-0.29
-29
-0.32
-0.37
-30
-0.46
-0.36
-"""
