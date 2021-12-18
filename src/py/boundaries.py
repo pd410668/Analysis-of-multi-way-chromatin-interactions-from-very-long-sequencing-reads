@@ -52,10 +52,10 @@ def main():
                     out_tad += 1
 
     print(f"In summary from each {graphs_number} graphs, we have {sum(cwalks_number)} cwalks from which {out_tad}"
-          f" are outside TAD boundaries")
+          f" are outside TAD boundaries. Rate is {round(out_tad/sum(cwalks_number), 3) * 100}%.")
 
 
 if __name__ == '__main__':
     main()
 
-# In summary from each 37 graphs, we have 319577 cwalks from which 160346 are outside TAD boundaries
+# In summary from each 5 graphs, we have 38798 cwalks from which 19957 are outside TAD boundaries. Rate is 51.4%.
