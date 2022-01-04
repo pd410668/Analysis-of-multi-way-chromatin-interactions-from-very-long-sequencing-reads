@@ -48,7 +48,7 @@ def matching_edges(interval_tree_dict: dict, positions: zip):
         left_edge = list(list(left_edge)[0])
         right_edge[2], left_edge[2] = chr, chr
 
-        if (left_edge and right_edge) and (left_edge != right_edge):  # prevention of empty sets and self-loops
+        if left_edge and right_edge:  # prevention of empty sets
             add_edge(tuple(left_edge), tuple(right_edge))  # ex. (77366342, 77367727, "chr1")
 
 
