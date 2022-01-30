@@ -15,6 +15,15 @@ def parse_positions(tsvfile: str, abs_threshold: int) -> zip:
     return zip(df.chr_R1.tolist(), df.pos_R1.tolist(), df.pos_R2.tolist())  # positions only from one chromosome was taking into consideration 
 
 
+def new_parse_positions(tsvfile: str, abs_threshold: int) -> zip:
+    df = pd.read_csv(tsvfile, sep='\t')
+    df = (df.iloc[:, :8]).drop(columns=["amp_i"])
+    df["thresh"] = abs(df.start1 - df.start2)
+    df = df[df.chr1 == df.chr2].reset_index(drop=True)  # consider cwalks on one chrs
+    df = df.where(df.thresh >= abs_threshold).dropna().reset_index(drop=True)
+    return zip(df.chr1.tolist(), df.start1.tolist(), df.start2.tolist())
+
+
 def read_bedfile(bedfile: str, chromosome: str) -> list:
     """ Return lists of restrictions sites positions and chromosomes where they were found """
     df = pd.read_csv(bedfile, sep="\t", header=None)
@@ -87,7 +96,7 @@ def main():
         tree_dict[chr] = IntervalTree.from_tuples(intervals)
 
     """ Parse C-walk positions """
-    positions = parse_positions(sys.argv[1], 500)  # .tsv file with selected absolute threshold
+    positions = new_parse_positions(sys.argv[1], 500)  # .tsv file with selected absolute threshold
     matching_edges(tree_dict, positions)
 
     """  C-walks construction """
