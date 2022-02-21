@@ -87,17 +87,17 @@ if __name__ == '__main__':
 
         for i in range(len(filtered_alignments)):
             for j in range(i + 1, len(filtered_alignments)):
-                if filtered_alignments[i][2] == filtered_alignments[j][2]:  # if two aligns are found on the same chromosome
-                    if filtered_alignments[i][2] in typical_chromosomes("human"):  # removed aligns with atypical chromosomes
-                        statistics = [
-                            filtered_alignments[i][0],  # seqname
-                            filtered_alignments[i][2],  # chromosome R1
-                            filtered_alignments[j][2],  # chromosome R2
-                            filtered_alignments[i][3],  # position R1
-                            filtered_alignments[j][3],  # position R2
-                            f"{filtered_alignments[i][5]} vs {filtered_alignments[j][5]}",  # strand_1vs2
-                            f"{filtered_alignments[i][1]} vs {filtered_alignments[j][1]}",  # RvsR
-                            abs(filtered_alignments[i][3] - filtered_alignments[j][3])      # abs_pos
-                        ]
-                        """ appends aligns to created .tsv file """
-                        collect_data(statistics, experiment_name, "a")
+#                 if filtered_alignments[i][2] == filtered_alignments[j][2]:  # if two aligns are found on the same chromosome
+                if filtered_alignments[i][2] in typical_chromosomes("human"):  # removed aligns with atypical chromosomes
+                    statistics = [
+                        filtered_alignments[i][0],  # seqname
+                        filtered_alignments[i][2],  # chromosome R1
+                        filtered_alignments[j][2],  # chromosome R2
+                        filtered_alignments[i][3],  # position R1
+                        filtered_alignments[j][3],  # position R2
+                        f"{filtered_alignments[i][5]} vs {filtered_alignments[j][5]}",  # strand_1vs2
+                        f"{filtered_alignments[i][1]} vs {filtered_alignments[j][1]}",  # RvsR
+                        abs(filtered_alignments[i][3] - filtered_alignments[j][3])      # abs_pos
+                    ]
+                    """ appends aligns to created .tsv file """
+                    collect_data(statistics, experiment_name, "a")
