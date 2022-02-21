@@ -87,8 +87,8 @@ if __name__ == '__main__':
 
         for i in range(len(filtered_alignments)):
             for j in range(i + 1, len(filtered_alignments)):
-#                 if filtered_alignments[i][2] == filtered_alignments[j][2]:  # if two aligns are found on the same chromosome
-                if (filtered_alignments[i][2] and filtered_alignments[j][2]) in typical_chromosomes("human"):  # removed aligns with atypical chromosomes
+                # removed aligns with atypical chromosomes
+                if (filtered_alignments[i][2] and filtered_alignments[j][2]) in typical_chromosomes("human"):  
                     statistics = [
                         filtered_alignments[i][0],  # seqname
                         filtered_alignments[i][2],  # chromosome R1
