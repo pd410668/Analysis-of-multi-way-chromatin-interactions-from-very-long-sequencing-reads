@@ -8,31 +8,44 @@ import pickle
 import sys
 
 
+# def parse_positions(tsvfile: str, abs_threshold: int) -> zip:
+#     """ Returns lists of positions of aligns that are apart selected absolute threshold """
+#     df = pd.read_csv(tsvfile, sep='\t')
+#     df = df.where(df.abs_pos >= abs_threshold).dropna().reset_index(drop=True)
+#     return zip(df.chr_R1.tolist(), df.pos_R1.tolist(), df.pos_R2.tolist())  # positions only from one chromosome was taking into consideration 
+
+
 def parse_positions(tsvfile: str, abs_threshold: int) -> zip:
     """ Returns lists of positions of aligns that are apart selected absolute threshold """
     df = pd.read_csv(tsvfile, sep='\t')
     df = df.where(df.abs_pos >= abs_threshold).dropna().reset_index(drop=True)
-    return zip(df.chr_R1.tolist(), df.pos_R1.tolist(), df.pos_R2.tolist())  # positions only from one chromosome was taking into consideration 
+    return zip(df.chr_R1.tolist(), df.chr_R2.tolist(), df.pos_R1.astype(int).tolist(), df.pos_R2.astype(int).tolist())
 
 
 def new_parse_positions(tsvfile: str, abs_threshold: int) -> zip:
     df = pd.read_csv(tsvfile, sep='\t')
-    df = (df.iloc[:, :8]).drop(columns=["amp_i"])
-    df["thresh"] = abs(df.start1 - df.start2)
-    df = df[df.chr1 == df.chr2].reset_index(drop=True)  # consider cwalks on one chrs
-    df = df.where(df.thresh >= abs_threshold).dropna().reset_index(drop=True)
-    return zip(df.chr1.tolist(), df.start1.tolist(), df.start2.tolist())
+    df["abs_pos"] = abs(df.start1 - df.start2)
+    df = df.where(df.abs_pos >= abs_threshold).dropna().reset_index(drop=True)
+    return zip(df.chr1.tolist(), df.chr2.tolist(), df.fid1.astype(int).tolist(), df.fid2.tolist())
 
 
-def read_bedfile(bedfile: str, chromosome: str) -> list:
+# def read_bedfile(bedfile: str, chromosome: str) -> list:
+#     """ Return lists of restrictions sites positions and chromosomes where they were found """
+#     df = pd.read_csv(bedfile, sep="\t", header=None)
+#     df = df.loc[df[0].isin(typical_chromosomes("human"))].reset_index(drop=True)
+#     df = df.where(df[0] == chromosome).dropna().reset_index(drop=True)
+#     df[1] = df[1].astype(int)
+#     chr = df[0].tolist()
+#     pos = df[1].tolist()
+#     return pos, chr
+
+
+def read_bedfile(bedfile: str) -> dict:
     """ Return lists of restrictions sites positions and chromosomes where they were found """
     df = pd.read_csv(bedfile, sep="\t", header=None)
+    df = df.iloc[:, :2]
     df = df.loc[df[0].isin(typical_chromosomes("human"))].reset_index(drop=True)
-    df = df.where(df[0] == chromosome).dropna().reset_index(drop=True)
-    df[1] = df[1].astype(int)
-    chr = df[0].tolist()
-    pos = df[1].tolist()
-    return pos, chr
+    return {x: y for x, y in df.groupby(0)}
 
 
 def add_edge(u, v):
@@ -48,17 +61,16 @@ def matching_edges(interval_tree_dict: dict, positions: zip):
     interval_tree: a dictionary storing the restriction intervals (as IntervalTree) for each chromosome
     positions: list of C-walk positions
     """
-    for chr, position_R1, position_R2 in positions:
+for chr1, chr2, position_R1, position_R2 in positions:
 
-        left_edge = interval_tree_dict[chr][position_R1]
-        right_edge = interval_tree_dict[chr][position_R2]
+    left_edge = interval_tree_dict[chr1][position_R1]
+    right_edge = interval_tree_dict[chr2][position_R2]
 
-        right_edge = list(list(right_edge)[0])
+    if left_edge and right_edge:  # prevention of empty sets
         left_edge = list(list(left_edge)[0])
-        right_edge[2], left_edge[2] = chr, chr
-
-        if left_edge and right_edge:  # prevention of empty sets
-            add_edge(tuple(left_edge), tuple(right_edge))  # ex. (77366342, 77367727, "chr1")
+        right_edge = list(list(right_edge)[0])
+        right_edge[2], left_edge[2] = chr1, chr2
+        add_edge(tuple(left_edge), tuple(right_edge))  # ex. (77366342, 77367727, "chr1")
 
 
 def cwalk(edges):
@@ -100,6 +112,7 @@ def main():
     matching_edges(tree_dict, positions)
 
     """  C-walks construction """
+    G.remove_edges_from(nx.selfloop_edges(G))  # remove self-loops
     sorted_edges = sorted(G.edges(data=True), key=lambda x: x[2]["weight"], reverse=True)  # Sort edges by read-coverage
     P = cwalk(sorted_edges)
     save_as_bed(P, sys.argv[3])  # save as .bed outfile with cwalks
