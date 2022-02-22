@@ -99,6 +99,18 @@ def save_as_bed(graph, experiment_name):
             collect_data(node, f"{experiment_name}", "a")
 
 
+def intra_chrs(graph):
+    for cwalk in list(nx.connected_components(graph)):
+    cwalk = list(cwalk)
+    if all(cwalk[i][2] == cwalk[0][2] for i in range(0, len(cwalk))):  # removing inter-chromosomal cwalks
+        cwalk = set(cwalk)
+        P = resolve_cwalk(graph.edges(data=True))
+        G.remove_edges_from(nx.find_cycle(graph, orientation="ignore"))
+        P = resolve_cwalk(graph.edges(data=True))
+        pickle.dump(P, open("output/hs_k562_I_1_cwalk.txt", "wb"))  # save cwalks as .txt outfile in binary mode
+        save_as_bed(P, "output/hs_k562_I_1_cwalk.bed")  # save as .bed outfile with cwalks
+
+            
 def main():
     tree_dict = dict()  # ex. tree_dict["chr1"] will be an object of type IntervalTree
     for chr in typical_chromosomes("human"):
