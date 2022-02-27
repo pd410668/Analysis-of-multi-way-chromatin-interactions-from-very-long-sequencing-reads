@@ -112,11 +112,19 @@ def intra_chrs(graph):
 
             
 def main():
+#     tree_dict = dict()  # ex. tree_dict["chr1"] will be an object of type IntervalTree
+#     for chr in typical_chromosomes("human"):
+#         """ Interval tree construction, separate for each chromosome """
+#         restrictions, chromosomes = read_bedfile(sys.argv[2], chr)  # .bed file
+#         intervals = [(i, j) for i, j in zip(restrictions[:-1], restrictions[1:])]
+#         tree_dict[chr] = IntervalTree.from_tuples(intervals)
+
+    restrictions_dict = read_bedfile("DpnII_hg19.bed")  # .bed file
     tree_dict = dict()  # ex. tree_dict["chr1"] will be an object of type IntervalTree
     for chr in typical_chromosomes("human"):
         """ Interval tree construction, separate for each chromosome """
-        restrictions, chromosomes = read_bedfile(sys.argv[2], chr)  # .bed file
-        intervals = [(i, j) for i, j in zip(restrictions[:-1], restrictions[1:])]
+        restrictions = restrictions_dict[chr][1].tolist()
+        intervals = [(i, j) for i, j in zip(restrictions[:-1], restrictions[1:])]  # change to +1
         tree_dict[chr] = IntervalTree.from_tuples(intervals)
 
     """ Parse C-walk positions """
