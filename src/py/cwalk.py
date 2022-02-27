@@ -124,7 +124,7 @@ def main():
     for chr in typical_chromosomes("human"):
         """ Interval tree construction, separate for each chromosome """
         restrictions = restrictions_dict[chr][1].tolist()
-        intervals = [(i, j) for i, j in zip(restrictions[:-1], restrictions[1:])]  # change to +1
+        intervals = [(i, j) for i, j in zip(restrictions[:-1], restrictions[1:])]
         tree_dict[chr] = IntervalTree.from_tuples(intervals)
 
     """ Parse C-walk positions """
