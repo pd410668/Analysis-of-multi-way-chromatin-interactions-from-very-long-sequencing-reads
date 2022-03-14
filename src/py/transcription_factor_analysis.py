@@ -82,15 +82,17 @@ def main(label: str):
     for chr in tf_peaks_dict.keys():
         for graph in graphs:
             for cwalk in list(nx.connected_components(graph)):
-                cut_tf = counting(list(cwalk), tf_peaks_dict, chr)
-                cut_mirror = counting(list(cwalk), mirror_peaks_dict, chr)
+                cwalk = list(cwalk)
+                if all(cwalk[i][2] == cwalk[0][2] for i in range(0, len(cwalk))):  # taking into consideration only intra-chrs cwlks
+                    cut_tf = counting(list(cwalk), tf_peaks_dict, chr)
+                    cut_mirror = counting(list(cwalk), mirror_peaks_dict, chr)
 
-                # normalization
-                norm_cut_tf = round(cut_tf / len(list(cwalk)), 2)
-                norm_cut_mirror = round(cut_mirror / len(list(cwalk)), 2)
+                    # normalization
+                    norm_cut_tf = round(cut_tf / len(list(cwalk)), 2)
+                    norm_cut_mirror = round(cut_mirror / len(list(cwalk)), 2)
 
-                normalized_peaks.append(norm_cut_tf)
-                normalized_random_peaks.append(norm_cut_mirror)
+                    normalized_peaks.append(norm_cut_tf)
+                    normalized_random_peaks.append(norm_cut_mirror)
 
     # cwalks with no cuts are considered as irrelevant
     norm_peaks_limited = [peak for peak in normalized_peaks if peak != 0]
