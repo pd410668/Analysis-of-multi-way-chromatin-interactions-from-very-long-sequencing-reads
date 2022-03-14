@@ -8,13 +8,6 @@ import pickle
 import sys
 
 
-# def parse_positions(tsvfile: str, abs_threshold: int) -> zip:
-#     """ Returns lists of positions of aligns that are apart selected absolute threshold """
-#     df = pd.read_csv(tsvfile, sep='\t')
-#     df = df.where(df.abs_pos >= abs_threshold).dropna().reset_index(drop=True)
-#     return zip(df.chr_R1.tolist(), df.pos_R1.tolist(), df.pos_R2.tolist())  # positions only from one chromosome was taking into consideration 
-
-
 def parse_positions(tsvfile: str, abs_threshold: int) -> zip:
     """ Returns lists of positions of aligns that are apart selected absolute threshold """
     df = pd.read_csv(tsvfile, sep='\t')
@@ -27,17 +20,6 @@ def new_parse_positions(tsvfile: str, abs_threshold: int) -> zip:
     df["abs_pos"] = abs(df.start1 - df.start2)
     df = df.where(df.abs_pos >= abs_threshold).dropna().reset_index(drop=True)
     return zip(df.chr1.tolist(), df.chr2.tolist(), df.fid1.astype(int).tolist(), df.fid2.tolist())
-
-
-# def read_bedfile(bedfile: str, chromosome: str) -> list:
-#     """ Return lists of restrictions sites positions and chromosomes where they were found """
-#     df = pd.read_csv(bedfile, sep="\t", header=None)
-#     df = df.loc[df[0].isin(typical_chromosomes("human"))].reset_index(drop=True)
-#     df = df.where(df[0] == chromosome).dropna().reset_index(drop=True)
-#     df[1] = df[1].astype(int)
-#     chr = df[0].tolist()
-#     pos = df[1].tolist()
-#     return pos, chr
 
 
 def read_bedfile(bedfile: str) -> dict:
@@ -112,13 +94,6 @@ def intra_chrs(graph):
 
             
 def main():
-#     tree_dict = dict()  # ex. tree_dict["chr1"] will be an object of type IntervalTree
-#     for chr in typical_chromosomes("human"):
-#         """ Interval tree construction, separate for each chromosome """
-#         restrictions, chromosomes = read_bedfile(sys.argv[2], chr)  # .bed file
-#         intervals = [(i, j) for i, j in zip(restrictions[:-1], restrictions[1:])]
-#         tree_dict[chr] = IntervalTree.from_tuples(intervals)
-
     restrictions_dict = read_bedfile("DpnII_hg19.bed")  # .bed file
     tree_dict = dict()  # ex. tree_dict["chr1"] will be an object of type IntervalTree
     for chr in typical_chromosomes("human"):
