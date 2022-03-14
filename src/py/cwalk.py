@@ -11,7 +11,7 @@ import sys
 def parse_positions(tsvfile: str, abs_threshold: int) -> zip:
     """ Returns lists of positions of aligns that are apart selected absolute threshold """
     df = pd.read_csv(tsvfile, sep='\t')
-    df = df.where(df.abs_pos >= abs_threshold).dropna().reset_index(drop=True)
+#     df = df.where(df.abs_pos >= abs_threshold).dropna().reset_index(drop=True) # rmove filtering
     return zip(df.chr_R1.tolist(), df.chr_R2.tolist(), df.pos_R1.astype(int).tolist(), df.pos_R2.astype(int).tolist())
 
 
