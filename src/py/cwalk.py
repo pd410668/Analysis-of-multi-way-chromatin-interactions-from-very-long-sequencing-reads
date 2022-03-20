@@ -19,7 +19,7 @@ def new_parse_positions(tsvfile: str, abs_threshold: int) -> zip:
     df = pd.read_csv(tsvfile, sep='\t')
     df["abs_pos"] = abs(df.start1 - df.start2)
     df = df.where(df.abs_pos >= abs_threshold).dropna().reset_index(drop=True)
-    return zip(df.chr1.tolist(), df.chr2.tolist(), df.fid1.astype(int).tolist(), df.fid2.tolist())
+    return zip(df.chr1.tolist(), df.chr2.tolist(), df.start1.astype(int).tolist(), df.start2.tolist())
 
 
 def read_bedfile(bedfile: str) -> dict:
