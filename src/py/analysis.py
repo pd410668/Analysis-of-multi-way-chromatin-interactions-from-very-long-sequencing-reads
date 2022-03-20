@@ -30,30 +30,24 @@ print(i + j == k)
 
 """
 k562.cadj:
-self_loops: 21
-Number of intra-chromosomal cwalks: 19
-Number of inter-chromosomal cwalks: 18240
-Number of all cwalks: 18259
-Percentage of intra-chromosomal cwalks is 0.104%
+self_loops: 0
+Number of intra-chromosomal cwalks: 284686
+Number of inter-chromosomal cwalks: 73162
+Number of all cwalks: 357848
+Percentage f intra-chromosomal cwalks is 79.555%
 True
 """
 
 """
-3 cwalk graphs: 
-self_loops: 985
-self_loops: 1211
-self_loops: 1511
-Number of intra-chromosomal cwalks: 17782
-Number of inter-chromosomal cwalks: 12278
-Number of all cwalks: 30060
-Percentage of intra-chromosomal cwalks is 59.155%
+5 cwalk graphs: 
+self_loops: 0
+Number of intra-chromosomal cwalks: 38784
+Number of inter-chromosomal cwalks: 27159
+Number of all cwalks: 65943
+Percentage f intra-chromosomal cwalks is 58.814%
 True
 """
 
 # Distribution of cwalks length
 histogram(inter_cwalks_len, "inter-chromosomal")
 histogram(intra_cwalks_len, "intra-chromosomal")
-
-
-
-
