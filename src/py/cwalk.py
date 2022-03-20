@@ -8,6 +8,28 @@ import pickle
 import sys
 
 
+def random_positions(tsvfile: str):
+    df_sizes = pd.read_csv(tsvfile, sep="\t", header=None)
+    df_sizes = df_sizes.loc[df_sizes[0].isin(typical_chromosomes("human"))].reset_index(drop=True)
+
+    df_sizes.columns = df_sizes.columns.map(str)
+    sizes_dict = df_sizes.groupby("0")["1"].agg(int).to_dict()
+    values, keys = [], []
+    for key, value in sizes_dict.items():
+        random_value = random.choices(range(0, value), k=1000000)
+        values.append(random_value)
+        keys.append(key)
+
+    random_values_dict = dict(zip(keys, values))
+    random_chrs = random.choices(typical_chromosomes("human"), k=10000000)
+
+    chrs, pos_1, pos_2 = [], [], []
+    for chr in random_chrs:
+        chrs.append(chr)
+        pos_1.append(random.choice(random_values_dict[chr]))
+        pos_2.append(random.choice(random_values_dict[chr]))
+    return zip(chrs, chrs, pos_1, pos_2)
+
 def parse_positions(tsvfile: str, abs_threshold: int) -> zip:
     """ Returns lists of positions of aligns that are apart selected absolute threshold """
     df = pd.read_csv(tsvfile, sep='\t')
