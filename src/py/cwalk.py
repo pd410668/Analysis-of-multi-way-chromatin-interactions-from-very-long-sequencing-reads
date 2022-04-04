@@ -6,35 +6,29 @@ from filtering import typical_chromosomes, collect_data
 from intervaltree import IntervalTree
 import pickle
 import sys
+from cwalks_analysis import load_cwalk_graph, load_files
 
 
-def random_positions(tsvfile: str):
-    df_sizes = pd.read_csv(tsvfile, sep="\t", header=None)
-    df_sizes = df_sizes.loc[df_sizes[0].isin(typical_chromosomes("human"))].reset_index(drop=True)
+def random_cwalks(path_to_graphs: str) -> zip:
+    graphs, _ = load_files(path_to_graphs, load_cwalk_graph)  # load .txt cwalk graph
+    cwalks = []
+    for graph in graphs:
+        for cwalk in nx.connected_components(graph):
+            cwalk = list(cwalk)
+            shuffle = random.randint(-1000000, 1000000)
+            print(shuffle)
+            center = [(((i[0] + i[1]) / 2) + shuffle, i[2]) for i in cwalk]
+            cwalks.extend(center)
 
-    df_sizes.columns = df_sizes.columns.map(str)
-    sizes_dict = df_sizes.groupby("0")["1"].agg(int).to_dict()
-    values, keys = [], []
-    for key, value in sizes_dict.items():
-        random_value = random.choices(range(0, value), k=1000000)
-        values.append(random_value)
-        keys.append(key)
+    pos_R1, chr_R1, pos_R2, chr_R2 = [], [], [], []
+    for i, j in zip(cwalks[:-1], cwalks[1:]):
+        pos_R1.append(int(i[0]))
+        chr_R1.append(i[1])
+        pos_R2.append(int(j[0]))
+        chr_R2.append(j[1])
 
-    random_values_dict = dict(zip(keys, values))
-    random_chrs = random.choices(typical_chromosomes("human"), k=10000000)
-
-    chrs, pos_1, pos_2 = [], [], []
-    for chr in random_chrs:
-        chrs.append(chr)
-        pos_1.append(random.choice(random_values_dict[chr]))
-        pos_2.append(random.choice(random_values_dict[chr]))
-    return zip(chrs, chrs, pos_1, pos_2)
-
-def parse_positions(tsvfile: str, abs_threshold: int) -> zip:
-    """ Returns lists of positions of aligns that are apart selected absolute threshold """
-    df = pd.read_csv(tsvfile, sep='\t')
-    df = df.where(df.abs_pos >= abs_threshold).dropna().reset_index(drop=True)
-    return zip(df.chr_R1.tolist(), df.chr_R2.tolist(), df.pos_R1.astype(int).tolist(), df.pos_R2.astype(int).tolist())
+    positions = zip(chr_R1, chr_R2, pos_R1, pos_R2)
+    return positions
 
 
 def new_parse_positions(tsvfile: str, abs_threshold: int) -> zip:
