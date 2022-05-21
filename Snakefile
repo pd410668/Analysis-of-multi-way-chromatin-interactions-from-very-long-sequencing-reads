@@ -1,94 +1,112 @@
-SAMPLES=["test.digested.R1", "test.digested.R2"]
-RES = list(set([i.rsplit('_R')[0] for i in SAMPLES]))
-EXP = list(set([i.rsplit('_I')[0] for i in SAMPLES]))
+SAMPLES=["hs_k562_I_1_R1", "hs_k562_I_1_R2"]  # human
+# SAMPLES=["hsp_mesc_I_5_R1", "hsp_mesc_I_5_R2"]  # mouse
+
+RES = list(set([i.rsplit("_R")[0] for i in SAMPLES]))
 
 rule all:
 	input:
-		expand("data/bam/k562/{sample}.bowtie2.bam", sample=SAMPLES)
-		# expand("data/cwalks/k562/bed/{res}_cwalks.bed", res=RES),
-		# expand("data/cwalks/k562/txt/{res}_cwalks.txt", res=RES),
+		expand("data/cwalks/k562/bed/{res}_cwalks.bed", res=RES),  # human
+		expand("data/cwalks/k562/txt/{res}_cwalks.txt", res=RES),  # human
+
+		# expand("data/cwalks/mesc/bed/{res}_cwalks.bed", res=RES),  # mouse
+		# expand("data/cwalks/mesc/txt/{res}_cwalks.txt", res=RES),  # mouse
 		
-		# # charts
-		# expand("data/analysis/charts/k562/{res}_RvsR.png", res=RES),
-		# expand("data/analysis/charts/k562/{res}_0_5000_R.png", res=RES),
-		# expand("data/analysis/charts/k562/{res}_500_10000_R.png", res=RES),
-		# expand("data/analysis/charts/k562/{res}_strand_1vs2.png", res=RES),
-		# expand("data/analysis/charts/k562/{res}_0_5000_S.png", res=RES),
-		# expand("data/analysis/charts/k562/{res}_500_10000_S.png", res=RES),
-		# expand("data/analysis/charts/k562/{res}_log10_500_1000.png", res=RES),
-		# expand("data/analysis/charts/k562/human_barh.png")
+		# human charts
+		expand("data/charts/k562/{res}_RvsR.png", res=RES),
+		expand("data/charts/k562/{res}_0_5000_R.png", res=RES),
+		expand("data/charts/k562/{res}_500_10000_R.png", res=RES),
+		expand("data/charts/k562/{res}_strand_1vs2.png", res=RES),
+		expand("data/charts/k562/{res}_0_5000_S.png", res=RES),
+		expand("data/charts/k562/{res}_500_10000_S.png", res=RES),
+		expand("data/charts/k562/{res}_log10_500_1000.png", res=RES),
+		expand("data/charts/k562/human_barh.png")
+
+		# mouse charts
+		# expand("data/charts/mm9/{res}_RvsR.png", res=RES),
+		# expand("data/charts/mm9/{res}_0_5000_R.png", res=RES),
+		# expand("data/charts/mm9/{res}_500_10000_R.png", res=RES),
+		# expand("data/charts/mm9/{res}_strand_1vs2.png", res=RES),
+		# expand("data/charts/mm9/{res}_0_5000_S.png", res=RES),
+		# expand("data/charts/mm9/{res}_500_10000_S.png", res=RES),
+		# expand("data/charts/mm9/{res}_log10_500_1000.png", res=RES),
+		# expand("data/charts/mm9/mouse_barh.png")
 
 
-rule digestion:  # working
+rule digestion:
 	input:
-		"data/fastq/k562/{sample}.fastq"
+		"data/fastq/k562/{sample}.fastq"  # human
+		# "data/fastq/mesc/{sample}.fastq"  # mouse
 	output:
-		"data/digested/k562/{sample}.digested.fastq"
+		"data/digested/k562/{sample}.digested.fastq"  # human
+		# "data/digested/mesc/{sample}.digested.fastq"  # mouse
 	shell:
 		"src/py/digestion.py {input} {output}"
 
-rule bowtie2:  #  bedtools bamtofastq [OPTIONS] -i <BAM> -fq <FASTQ> - command to check (working)
+rule fastq2bam:
 	input:
-		index = "data/Bowtie2Index/hg19",
-		fastq = "data/digested/k562/{sample}.fastq"
-	output:
-		"data/sam/k562/{sample}.sam"
-	shell:
-		"bowtie2 -x {input.index}/hg19 -U {input.fastq} -S {output}"
+		index = "data/Bowtie2Index/hg19",  # human
+		# index = "data/Bowtie2Index/mm9",  # mouse
 
-rule samtools:
+		fastq = "data/digested/k562/{sample}.digested.fastq"  # human
+		# fastq = "data/digested/mesc/{sample}.digested.fastq"  # mouse 
+	output:
+		"data/bam/k562/{sample}.bowtie2.bam"  # human
+		# "data/bam/mesc/{sample}.bowtie2.bam"  # mouse
+	shell:
+		"bowtie2 -x {input.index}/hg19 -U {input.fastq} | samtools view -bS -> {output}" # human
+		# "bowtie2 -x {input.index}/mm9 -U {input.fastq} | samtools view -bS -> {output}" # mouse
+
+
+rule filtering:
 	input:
-		"data/sam/k562/{sample}.sam"
+		expand("data/bam/k562/{sample}.bowtie2.bam", sample=SAMPLES) # human
+		# expand("data/bam/mesc/{sample}.bowtie2.bam", sample=SAMPLES)  # mouse
 	output:
-		"data/bam/k562/{sample}.bowtie2.bam"
+		"data/supportive/k562/{res}.tsv"  # humman
+		# "data/supportive/mesc/{res}.tsv"  # mouse
 	shell:
-		"samtools view -u {input} -o {output}"  # "bowtie2 -x {input.index}/hg19.zip -U {input.fastq} | samtools view -b -o {output}" - can be done faster
+		"src/py/filtering.py human {input} {output}"   # human
+		# "src/py/filtering.py mouse {input} {output}"   # mouse
 
-# rule filtering:
-# 	input:
-# 		expand("data/bam/k562/{sample}.bowtie2.bam", sample=SAMPLES)
-# 	output:
-# 		"data/supportive/k562/{res}.tsv"
-# 	shell:
-# 		"src/py/filtering.py {input} {output}"
+rule barh:
+	input:
+		"data/supportive/k562"  # human
+		# "data/supportive/mesc"  # mouse
+	output:
+		"data/charts/k562/human_barh.png"  # human
+		# "data/charts/mesc/mouse_barh.png"  # mouse
+	shell:
+		"src/py/barh.py {input} {output}"
 
-# rule barh:
-# 	input:
-# 		"data/supportive/k562"
-# 	output:
-# 		"data/analysis/charts/k562/human_barh.png"
-# 	shell:
-# 		"src/py/barh.py {input} {output}"
+rule charts:
+	input:
+		"data/supportive/k562/{res}.tsv"
+	output:
+		RvsR_barplot = "data/charts/k562/{res}_RvsR.png",
+		dist_0_5000_R = "data/charts/k562/{res}_0_5000_R.png",
+		dist_500_10000_R = "data/charts/k562/{res}_500_10000_R.png",
+		strand_1vs2_barplot = "data/charts/k562/{res}_strand_1vs2.png",
+		dist_0_5000_S = "data/charts/k562/{res}_0_5000_S.png",
+		dist_500_10000_S = "data/charts/k562/{res}_500_10000_S.png",
+		log10 = "data/charts/k562/{res}_log10_500_1000.png"
+	shell:
+		"src/py/charts.py {input} {output.RvsR_barplot} {output.dist_0_5000_R} {output.dist_500_10000_R} \
+		{output.strand_1vs2_barplot} {output.dist_0_5000_S} {output.dist_500_10000_S} {output.log10}"
 
-# rule charts:
-# 	input:
-# 		"data/supportive/k562/{res}.tsv"
-# 	output:
-# 		RvsR_barplot = "data/analysis/charts/k562/{res}_RvsR.png",
-# 		dist_0_5000_R = "data/analysis/charts/k562/{res}_0_5000_R.png",
-# 		dist_500_10000_R = "data/analysis/charts/k562/{res}_500_10000_R.png",
-# 		strand_1vs2_barplot = "data/analysis/charts/k562/{res}_strand_1vs2.png",
-# 		dist_0_5000_S = "data/analysis/charts/k562/{res}_0_5000_S.png",
-# 		dist_500_10000_S = "data/analysis/charts/k562/{res}_500_10000_S.png",
-# 		log10 = "data/analysis/charts/k562/{res}_log10_500_1000.png"
-# 	shell:
-# 		"src/py/charts.py {input} {output.RvsR_barplot} {output.dist_0_5000_R} {output.dist_500_10000_R} \
-# 		{output.strand_1vs2_barplot} {output.dist_0_5000_S} {output.dist_500_10000_S} {output.log10}"
+rule cwalk:
+	input:
+		tsvfile = "data/supportive/k562/{res}.tsv",  # human
+		# tsvfile = "data/supportive/mesc/{res}.tsv",  # mouse
 
-# rule cwalk:
-# 	input:
-# 		tsvfile = "data/supportive/k562/{res}.tsv",
-# 		bedfile = "data/restrictions/DpnII_hg19.bed"
-# 	output:
-# 		cwalk_bed = "data/cwalks/k562/bed/{res}_cwalks.bed",
-# 		cwalk_txt = "data/cwalks/k562/txt/{res}_cwalks.txt"
-# 	shell:
-# 		"src/py/cwalk.py {input.tsvfile} {input.bedfile} {output.cwalk_bed} {output.cwalk_txt}"
+		bedfile = "data/restrictions/DpnII_hg19.bed"  # human
+		# bedfile = "data/restrictions/DpnII_mm9.bed"  # mouse
 
-# rule cwalks_analysis:
-# 	input:
-# 		"data/cwalks/k562/txt"
-# 	output:
-# 		"data/analysis/cwalks/cwalks"
-# 	shell:
-# 		"src/py/cwalks_analysis.py {input} {output}"
+	output:
+		cwalk_bed = "data/cwalks/k562/bed/{res}_cwalks.bed",  # human
+		# cwalk_bed = "data/cwalks/k562/bed/{res}_cwalks.bed",  # mouse
+
+		cwalk_txt = "data/cwalks/k562/txt/{res}_cwalks.txt"  # human
+		# cwalk_txt = "data/cwalks/mesc/txt/{res}_cwalks.txt"  # mouse
+	shell:
+		"src/py/cwalk.py human {input.bedfile} {input.tsvfile} {output.cwalk_bed} {output.cwalk_txt}"  # human
+		# "src/py/cwalk.py mouse {input.bedfile} {input.tsvfile} {output.cwalk_bed} {output.cwalk_txt}"  # mouse
