@@ -10,10 +10,7 @@ import sys
 
 def parse_positions(tsvfile: str, abs_threshold: int) -> zip:
     """ Returns lists of positions of aligns """
-#!/usr/bin/env python
-
-import networkx as nx
-import pandas     df = pd.read_csv(tsvfile, sep="\t")
+    df = pd.read_csv(tsvfile, sep="\t")
     df = df.where(df.abs_pos >= abs_threshold).dropna().reset_index(drop=True)
     return zip(df.chr_R1.tolist(), df.chr_R2.tolist(), df.pos_R1.astype(int).tolist(), df.pos_R2.astype(int).tolist())
 
@@ -48,6 +45,8 @@ def matching_edges(interval_tree_dict: dict, positions: zip):
             right_edge = list(list(right_edge)[0])
             right_edge[2], left_edge[2] = chr1, chr2
             add_edge(tuple(left_edge), tuple(right_edge))  # ex. (77366342, 77367727, "chr1")
+
+
 def cwalk_construction(edges):
     """ Resolve the C-walk graph """
     P = nx.Graph()
