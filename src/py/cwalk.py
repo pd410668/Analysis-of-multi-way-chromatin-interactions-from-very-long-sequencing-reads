@@ -6,43 +6,23 @@ from filtering import typical_chromosomes, collect_data
 from intervaltree import IntervalTree
 import pickle
 import sys
-from cwalks_analysis import load_cwalk_graph, load_files
 
 
-def random_cwalks(path_to_graphs: str) -> zip:
-    graphs, _ = load_files(path_to_graphs, load_cwalk_graph)  # load .txt cwalk graph
-    cwalks = []
-    for graph in graphs:
-        for cwalk in nx.connected_components(graph):
-            cwalk = list(cwalk)
-            shuffle = random.randint(-1000000, 1000000)
-            print(shuffle)
-            center = [(((i[0] + i[1]) / 2) + shuffle, i[2]) for i in cwalk]
-            cwalks.extend(center)
+def parse_positions(tsvfile: str, abs_threshold: int) -> zip:
+    """ Returns lists of positions of aligns """
+#!/usr/bin/env python
 
-    pos_R1, chr_R1, pos_R2, chr_R2 = [], [], [], []
-    for i, j in zip(cwalks[:-1], cwalks[1:]):
-        pos_R1.append(int(i[0]))
-        chr_R1.append(i[1])
-        pos_R2.append(int(j[0]))
-        chr_R2.append(j[1])
-
-    positions = zip(chr_R1, chr_R2, pos_R1, pos_R2)
-    return positions
-
-
-def new_parse_positions(tsvfile: str, abs_threshold: int) -> zip:
-    df = pd.read_csv(tsvfile, sep='\t')
-    df["abs_pos"] = abs(df.start1 - df.start2)
+import networkx as nx
+import pandas     df = pd.read_csv(tsvfile, sep="\t")
     df = df.where(df.abs_pos >= abs_threshold).dropna().reset_index(drop=True)
-    return zip(df.chr1.tolist(), df.chr2.tolist(), df.start1.astype(int).tolist(), df.start2.astype(int).tolist())
+    return zip(df.chr_R1.tolist(), df.chr_R2.tolist(), df.pos_R1.astype(int).tolist(), df.pos_R2.astype(int).tolist())
 
 
-def read_bedfile(bedfile: str) -> dict:
+def parse_bedfile(bedfile: str, organism: str) -> dict:
     """ Return lists of restrictions sites positions and chromosomes where they were found """
     df = pd.read_csv(bedfile, sep="\t", header=None)
     df = df.iloc[:, :2]
-    df = df.loc[df[0].isin(typical_chromosomes("human"))].reset_index(drop=True)
+    df = df.loc[df[0].isin(typical_chromosomes(organism))].reset_index(drop=True)
     return {x: y for x, y in df.groupby(0)}
 
 
@@ -55,23 +35,20 @@ def add_edge(u, v):
 
 
 def matching_edges(interval_tree_dict: dict, positions: zip):
-    """ Graph construction:
+    """ 
     interval_tree: a dictionary storing the restriction intervals (as IntervalTree) for each chromosome
     positions: list of C-walk positions
     """
-for chr1, chr2, position_R1, position_R2 in positions:
+    for chr1, chr2, position_R1, position_R2 in positions:
+        left_edge = interval_tree_dict[chr1][position_R1]
+        right_edge = interval_tree_dict[chr2][position_R2]
 
-    left_edge = interval_tree_dict[chr1][position_R1]
-    right_edge = interval_tree_dict[chr2][position_R2]
-
-    if left_edge and right_edge:  # prevention of empty sets
-        left_edge = list(list(left_edge)[0])
-        right_edge = list(list(right_edge)[0])
-        right_edge[2], left_edge[2] = chr1, chr2
-        add_edge(tuple(left_edge), tuple(right_edge))  # ex. (77366342, 77367727, "chr1")
-
-
-def cwalk(edges):
+        if left_edge and right_edge:  # prevention of empty sets
+            left_edge = list(list(left_edge)[0])
+            right_edge = list(list(right_edge)[0])
+            right_edge[2], left_edge[2] = chr1, chr2
+            add_edge(tuple(left_edge), tuple(right_edge))  # ex. (77366342, 77367727, "chr1")
+def cwalk_construction(edges):
     """ Resolve the C-walk graph """
     P = nx.Graph()
     for u, v, a in edges:
@@ -97,37 +74,29 @@ def save_as_bed(graph, experiment_name):
             collect_data(node, f"{experiment_name}", "a")
 
 
-def intra_chrs(graph):
-    for cwalk in list(nx.connected_components(graph)):
-    cwalk = list(cwalk)
-    if all(cwalk[i][2] == cwalk[0][2] for i in range(0, len(cwalk))):  # removing inter-chromosomal cwalks
-        cwalk = set(cwalk)
-        P = resolve_cwalk(graph.edges(data=True))
-        G.remove_edges_from(nx.find_cycle(graph, orientation="ignore"))
-        P = resolve_cwalk(graph.edges(data=True))
-        pickle.dump(P, open("output/hs_k562_I_1_cwalk.txt", "wb"))  # save cwalks as .txt outfile in binary mode
-        save_as_bed(P, "output/hs_k562_I_1_cwalk.bed")  # save as .bed outfile with cwalks
-
-            
 def main():
-    restrictions_dict = read_bedfile("DpnII_hg19.bed")  # .bed file
+    organism = sys.argv[1]
+    restrictions_bedfile = sys.argv[2]
+
+    restrictions_dict = parse_bedfile(restrictions_bedfile, organism)  # .bed file
     tree_dict = dict()  # ex. tree_dict["chr1"] will be an object of type IntervalTree
-    for chr in typical_chromosomes("human"):
+    for chr in typical_chromosomes(organism):
         """ Interval tree construction, separate for each chromosome """
         restrictions = restrictions_dict[chr][1].tolist()
         intervals = [(i, j) for i, j in zip(restrictions[:-1], restrictions[1:])]
         tree_dict[chr] = IntervalTree.from_tuples(intervals)
 
-    """ Parse C-walk positions """
-    positions = new_parse_positions(sys.argv[1], 500)  # .tsv file with selected absolute threshold
+    positions = parse_positions(sys.argv[3], 500)  # .tsv file with selected absolute threshold
     matching_edges(tree_dict, positions)
 
-    """  C-walks construction """
+    """  cwalks construction """
     G.remove_edges_from(nx.selfloop_edges(G))  # remove self-loops
     sorted_edges = sorted(G.edges(data=True), key=lambda x: x[2]["weight"], reverse=True)  # Sort edges by read-coverage
-    P = cwalk(sorted_edges)
-    save_as_bed(P, sys.argv[3])  # save as .bed outfile with cwalks
-    pickle.dump(P, open(sys.argv[4], "wb"))  # save cwalks as .txt outfile in binary mode
+    P = cwalk_construction(sorted_edges)
+
+    """ saving cwalks """
+    save_as_bed(P, sys.argv[4])  # save as .bed outfile with cwalks
+    pickle.dump(P, open(sys.argv[5], "wb"))  # save cwalks as .txt outfile in binary mode
 
 
 if __name__ == '__main__':
