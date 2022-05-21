@@ -32,7 +32,7 @@ def collect_data(data, experiment_name, WvsA):
     """ saving supportive file to further analysis """
     import csv
     with open(f"{experiment_name}", WvsA, newline='') as outfile:
-        tsv_output = csv.writer(outfile, delimiter='\t')
+        tsv_output = csv.writer(outfile, delimiter="\t")
         tsv_output.writerow(data)
 
 
@@ -43,12 +43,13 @@ def typical_chromosomes(organism) -> list:
     return chrs
 
 
-if __name__ == '__main__':
+def main():
 
-    experiment_R1 = sys.argv[1]
-    experiment_R2 = sys.argv[2]
-    experiment_name = sys.argv[3]
-
+    organism = sys.argv[1]
+    experiment_R1 = sys.argv[2]
+    experiment_R2 = sys.argv[3]
+    experiment_name = sys.argv[4]
+    
     """ create .tsv file with field names """
     fieldnames = ["seqname", "chr_R1", "chr_R2", "pos_R1", "pos_R2", "strand_1vs2", "RvsR", "abs_pos"]
     collect_data(fieldnames, experiment_name, "w")
@@ -87,8 +88,7 @@ if __name__ == '__main__':
 
         for i in range(len(filtered_alignments)):
             for j in range(i + 1, len(filtered_alignments)):
-                # removed aligns with atypical chromosomes
-                if (filtered_alignments[j][2] in typical_chromosomes("human") and filtered_alignments[i][2]) in typical_chromosomes("human"): 
+                if (filtered_alignments[j][2] in typical_chromosomes(organism) and filtered_alignments[i][2]) in typical_chromosomes(organism):
                     statistics = [
                         filtered_alignments[i][0],  # seqname
                         filtered_alignments[i][2],  # chromosome R1
@@ -101,3 +101,8 @@ if __name__ == '__main__':
                     ]
                     """ appends aligns to created .tsv file """
                     collect_data(statistics, experiment_name, "a")
+
+
+if __name__ == '__main__':
+    main()
+
