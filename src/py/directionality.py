@@ -52,21 +52,23 @@ def main():
             for cwalk in list(nx.connected_components(graph)):
                 if len(cwalk) == length:
                     cwalk = list(cwalk)
+                    
+                    if all(cwalk[i][2] == cwalk[0][2] for i in range(0, len(cwalk))):  # intra chrs cwalks
 
-                    sign = directionality(cwalk)
-                    avg_sign = avg_directionality(sign)
+                        sign = directionality(cwalk)
+                        avg_sign = avg_directionality(sign)
 
-                    random.shuffle(cwalk)
-                    sign_shuffle = directionality(cwalk)
-                    avg_sign_shuffle = avg_directionality(sign_shuffle)
+                        random.shuffle(cwalk)
+                        sign_shuffle = directionality(cwalk)
+                        avg_sign_shuffle = avg_directionality(sign_shuffle)
 
-                    avg_signs.append(avg_sign)
-                    avg_signs_shuffle.append(avg_sign_shuffle)
+                        avg_signs.append(avg_sign)
+                        avg_signs_shuffle.append(avg_sign_shuffle)
 
-        if avg_signs:
+            if avg_signs:
 
-            hist(avg_signs_shuffle, round(statistics.mean(avg_signs_shuffle), 2), length, "shuffle")
-            hist(avg_signs, round(statistics.mean(avg_signs), 2), length, "data")
+                hist(avg_signs_shuffle, round(statistics.mean(avg_signs_shuffle), 2), length, "shuffle")
+                hist(avg_signs, round(statistics.mean(avg_signs), 2), length, "data")
 
 
 if __name__ == '__main__':
