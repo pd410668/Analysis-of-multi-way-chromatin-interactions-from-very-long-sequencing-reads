@@ -37,7 +37,7 @@ def count_aligns(infiles):
 
 def barh(data, rejected, labels, name):
     sns.set_style("whitegrid")
-    fig, ax = plt.subplots(figsize=(12, 10))
+    fig, ax = plt.subplots(figsize=(12, 16))
     y_pos = np.arange(len(labels))
     bar_1 = ax.barh(y_pos, data, color="tab:blue", edgecolor="black", height=1)
     bar_2 = ax.barh(y_pos, rejected, left=data, color="tab:red", edgecolor="black", height=1)
