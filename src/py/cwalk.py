@@ -23,12 +23,13 @@ def parse_bedfile(bedfile: str, organism: str) -> dict:
     return {x: y for x, y in df.groupby(0)}
 
 
-def add_edge(u, v):
+def add_weighted_edges(u, v, node1, node2):
     """ Creating weighted edges """
     if G.has_edge(u, v):
         G[u][v]["weight"] += 1
     else:
         G.add_edge(u, v, weight=1)
+        nx.set_edge_attributes(G, {(u, v): {"node1": node1, "node2": node2}})
 
 
 def matching_edges(interval_tree_dict: dict, positions: zip):
@@ -41,36 +42,29 @@ def matching_edges(interval_tree_dict: dict, positions: zip):
         right_edge = interval_tree_dict[chr2][position_R2]
 
         if left_edge and right_edge:  # prevention of empty sets
-            left_edge = list(list(left_edge)[0])
-            right_edge = list(list(right_edge)[0])
-            right_edge[2], left_edge[2] = chr1, chr2
-            add_edge(tuple(left_edge), tuple(right_edge))  # ex. (77366342, 77367727, "chr1")
+            left_edge = tuple(list(left_edge)[0])[0:2]
+            right_edge = tuple(list(right_edge)[0])[0:2]
+            add_weighted_edges(left_edge, right_edge, chr1, chr2)
 
 
-def cwalk_construction(edges):
+def cwalk_construction(G):
     """ Resolve the C-walk graph """
+    sorted_edges = sorted(G.edges(data=True), key=lambda x: x[2]["weight"], reverse=True)
     P = nx.Graph()
-    for u, v, a in edges:
-        if (u not in P or P.degree[u] < 2) and (v not in P or P.degree[v] < 2):
+    for u, v, a in sorted_edges:
+        node1 = a["node1"]
+        node2 = a["node2"]
+        print(u, v, a)
+        if (u not in P or P.degree[u] < 2) and (v not in P or P.degree[v] < 2):  # The node degree is the number of edges adjacent to the node
             P.add_edge(u, v, weight=a["weight"])
+            nx.set_edge_attributes(P, {(u, v): {"node1": node1, "node2": node2}})
 
     for cwalk in list(nx.connected_components(P)):
+        print(cwalk)
         if len(cwalk) < 3:
             for node in cwalk:
                 P.remove_node(node)  # Remove cwalks that are include one hop
     return P
-
-
-def save_as_bed(graph, experiment_name):
-    numbers = list(range(1, nx.number_connected_components(graph) + 1))
-    order = [2, 0, 1]
-    for cwalk, number in zip(list(nx.connected_components(graph)), numbers):
-        cwalk_length = range(1, len(cwalk) + 1)
-
-        for node, length in zip(cwalk, cwalk_length):
-            node = [node[i] for i in order]
-            node.append(f"{length}_{number}")
-            collect_data(node, f"{experiment_name}", "a")
 
 
 def main():
@@ -89,12 +83,10 @@ def main():
     matching_edges(tree_dict, positions)
 
     """  cwalks construction """
-    G.remove_edges_from(nx.selfloop_edges(G))  # remove self-loops
-    sorted_edges = sorted(G.edges(data=True), key=lambda x: x[2]["weight"], reverse=True)  # Sort edges by read-coverage
-    P = cwalk_construction(sorted_edges)
+    P = cwalk_construction(G)
+    P.remove_edges_from(nx.selfloop_edges(P))  # remove self-loops
 
     """ saving cwalks """
-    save_as_bed(P, sys.argv[4])  # save as .bed outfile with cwalks
     pickle.dump(P, open(sys.argv[5], "wb"))  # save cwalks as .txt outfile in binary mode
 
 
