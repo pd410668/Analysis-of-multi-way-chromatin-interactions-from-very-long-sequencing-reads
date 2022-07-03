@@ -85,7 +85,7 @@ def main():
     P.remove_edges_from(nx.selfloop_edges(P))  # remove self-loops
 
     """ saving cwalks """
-    pickle.dump(P, open(sys.argv[5], "wb"))  # save cwalks as .txt outfile in binary mode
+    pickle.dump(P, open(sys.argv[4], "wb"))  # save cwalks as .txt outfile in binary mode
 
 
 if __name__ == '__main__':
