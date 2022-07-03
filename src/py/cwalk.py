@@ -54,13 +54,11 @@ def cwalk_construction(G):
     for u, v, a in sorted_edges:
         node1 = a["node1"]
         node2 = a["node2"]
-        print(u, v, a)
         if (u not in P or P.degree[u] < 2) and (v not in P or P.degree[v] < 2):
             P.add_edge(u, v, weight=a["weight"])
             nx.set_edge_attributes(P, {(u, v): {"node1": node1, "node2": node2}})
 
     for cwalk in list(nx.connected_components(P)):
-        print(cwalk)
         if len(cwalk) < 3:
             for node in cwalk:
                 P.remove_node(node)  # Remove cwalks that are include one hop
