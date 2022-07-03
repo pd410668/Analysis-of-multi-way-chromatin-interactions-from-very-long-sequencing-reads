@@ -55,7 +55,7 @@ def cwalk_construction(G):
         node1 = a["node1"]
         node2 = a["node2"]
         print(u, v, a)
-        if (u not in P or P.degree[u] < 2) and (v not in P or P.degree[v] < 2):  # The node degree is the number of edges adjacent to the node
+        if (u not in P or P.degree[u] < 2) and (v not in P or P.degree[v] < 2):
             P.add_edge(u, v, weight=a["weight"])
             nx.set_edge_attributes(P, {(u, v): {"node1": node1, "node2": node2}})
 
