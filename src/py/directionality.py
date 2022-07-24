@@ -31,11 +31,11 @@ def hist(data, avg, name, length):
     ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{0:g}".format(x / 1000) + "k"))
     ax.set_title(f"Distribution of directionality of cwalks of {length} length from {sys.argv[1]} cells.\n "
                  f"Average value of directivity is {avg}.", fontsize=18)
-    return plt.savefig(f"{sys.argv[1]}_directionality_{length}_{name}.png"), plt.close()
+    return plt.savefig(f"{sys.argv[3]}/{sys.argv[1]}_directionality_{length}_{name}.png"), plt.close()
 
 
 def main():
-    graphs, _ = load_files(sys.argv[2], load_cwalk_graph)  # load .txt cwalk graph # "./cwalks"
+    graphs, _ = load_files(sys.argv[2], load_cwalk_graph)  # load .txt cwalk graph
 
     duplicate_cwalk_length = []
     for graph in graphs:
@@ -46,7 +46,6 @@ def main():
     cwalk_length = list(set(duplicate_cwalk_length))  # list with all possible length of cwalks in each graph
 
     for length in range(min(cwalk_length), max(cwalk_length) + 1):
-        print(length)
 
         avg_signs_shuffle = []
         avg_signs = []
