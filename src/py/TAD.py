@@ -128,6 +128,19 @@ def comparison(general_in, general_out, name):
     return plt.savefig(f"{name}"), plt.close()
 
 
+def domains(boundaries, name):
+    active_boundaries = boundaries.loc[boundaries["mode"] == "active"].dropna().reset_index(drop=True)
+    passive_boundaries = boundaries.loc[boundaries["mode"] == "passive"].dropna().reset_index(drop=True)
+    sns.set_style("whitegrid")
+    plt.figure(figsize=(10, 8))
+    sns.distplot(active_boundaries["size"], hist=False, color="red")
+    sns.distplot(passive_boundaries["size"], hist=False, color="black")
+    plt.title("Domain size distribution")
+    plt.legend(labels=["Active", "Passive"])
+    plt.xlabel("Domain size [bp]")
+    return plt.savefig(f"{name}"), plt.close()
+
+
 def hop_count(active, passive, two, three, many, name):
     active = active[:6]
     passive = passive[:6]
@@ -293,6 +306,7 @@ def main():
                [round((sum(general_out_lst) / sum(count)) * 100, 2),
                 round((sum(rdm_general_out_lst) / sum(rdm_count)) * 100, 2)], sys.argv[9])
     hop_count(count_active, count_passive, count_two, count_three, count_many, sys.argv[10])
+    domains(df_boundaries, sys.argv[11])
 
     print(f"Total number of c-walks: {sum(count)}")
     print(f"Total number of random c-walks: {sum(rdm_count)}")
