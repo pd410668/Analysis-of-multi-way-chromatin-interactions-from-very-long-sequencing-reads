@@ -95,7 +95,6 @@ def main(label: str):
     norm_random_peaks_limited = [peak for peak in normalized_random_peaks if peak != 0]
 
     histogram(norm_peaks_limited, norm_random_peaks_limited, label, sys.argv[4])
-    histogram(normalized_peaks, normalized_random_peaks, label, sys.argv[5])
 
     zeros = [each for each in normalized_peaks if each == 0.0]
     random_zeros = [each for each in normalized_random_peaks if each == 0.0]
