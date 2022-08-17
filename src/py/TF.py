@@ -29,7 +29,7 @@ def mirror_peaks(chr_sizes: str, peaks_dict: dict) -> dict:
     return: dict where chromosomes are keys and values are "mirror peaks" within them
     """
     df_sizes = pd.read_csv(chr_sizes, sep='\t', header=None)
-    df_sizes = df_sizes.loc[df_sizes[0].isin(typical_chromosomes("human"))].reset_index(drop=True)  # sys instead of str
+    df_sizes = df_sizes.loc[df_sizes[0].isin(typical_chromosomes(sys.argv[1]))].reset_index(drop=True)  # sys instead of str
     df_sizes.columns = df_sizes.columns.map(str)
     sizes_dict = df_sizes.groupby("0")["1"].agg(list).to_dict()
 
@@ -60,20 +60,18 @@ def histogram(x, y, label, name):
     fig, axs = plt.subplots(1, 2, sharex=True, sharey=True, tight_layout=True, figsize=(16, 9))
     fig.suptitle(f"Overlap with {label} binding sites", fontsize=20)
     axs[0].hist(x, color="tab:blue", edgecolor="black")
-    # sns.histplot(x, ax=axs[0], color="tab:blue", edgecolor="black")
     axs[0].set_title("Peaks from CHIP-seq data", fontsize=14)
     axs[0].set_xlabel("Fraction of edges in cwalk having a peak", fontsize=14)
     axs[0].set_ylabel("Number of c-walks", fontsize=14)
     axs[1].hist(y, color="tab:red", edgecolor="black")
-    # sns.histplot(y, ax=axs[1], color="tab:green", edgecolor="black")
     axs[1].set_title("Randomize peaks", fontsize=14)
     axs[1].set_xlabel("Fraction of edges in cwalk having a peak", fontsize=14)
-    return plt.savefig(f"{label}_histplot_{name}.png"), plt.close()
+    return plt.savefig(f"{label}_{name}"), plt.close()
 
 
 def main(label: str):
-    graphs, _ = load_files("txt", load_cwalk_graph)
-    mirror_peaks_dict = mirror_peaks("hg19.chrom.sizes.tsv", tf_peaks_dict)  # load chromosomes sizes
+    graphs, _ = load_files(sys.argv[2], load_cwalk_graph)  # load folder with cwalks
+    mirror_peaks_dict = mirror_peaks(sys.argv[3], tf_peaks_dict)  # load chromosomes sizes
 
     normalized_peaks = []
     normalized_random_peaks = []
@@ -96,14 +94,14 @@ def main(label: str):
     norm_peaks_limited = [peak for peak in normalized_peaks if peak != 0]
     norm_random_peaks_limited = [peak for peak in normalized_random_peaks if peak != 0]
 
-    histogram(norm_peaks_limited, norm_random_peaks_limited, label, "all")
-    histogram(normalized_peaks, normalized_random_peaks, label, "zero")
+    histogram(norm_peaks_limited, norm_random_peaks_limited, label, sys.argv[4])
+    histogram(normalized_peaks, normalized_random_peaks, label, sys.argv[5])
 
     zeros = [each for each in normalized_peaks if each == 0.0]
     random_zeros = [each for each in normalized_random_peaks if each == 0.0]
 
     print(f"Percentage of cwalks from data which has no peaks within is {round(len(zeros)/(len(normalized_peaks))*100, 2)}%")
-    print(f"Percentage of random cwalks which has no peaks within is {round(len(random_zeros) / (len(normalized_random_peaks))*100, 2)}%")
+    print(f"Percentage of random cwalks which has no peaks within is {round(len(random_zeros)/(len(normalized_random_peaks))*100, 2)}%")
 
     from scipy.stats import wilcoxon
     res = wilcoxon(x=normalized_peaks, y=normalized_random_peaks, zero_method="zsplit")
