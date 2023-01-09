@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from cwalk import parse_bedfile
 from analysis import load_cwalk_graph, load_files
 import pandas as pd
 import networkx as nx
@@ -12,13 +13,24 @@ from cwalk import parse_bedfile
 from filtering import typical_chromosomes
 import sys
 
+import matplotlib.pylab as pylab
+params = {'legend.fontsize': 'x-large',
+         'axes.labelsize': 'x-large',
+         'axes.titlesize':'x-large',
+         'xtick.labelsize':'xx-large',
+         'ytick.labelsize':'xx-large'}
+pylab.rcParams.update(params)
 
-def boundaries(bedfile: str) -> dict:
+
+def boundaries(bedfile: str):
+    # parse bedfile with TAD domains boundaries
+    # return DataFrame with "chrom", "start", "end", "mode", "size" columns
     df = pd.read_csv(bedfile, delimiter="\t")
-    return df[["chrom", "start", "end", "mode"]]
+    return df[["chrom", "start", "end", "mode", "size"]]
 
 
-def identical(itv):
+def identical(itv: list) -> int:
+    # return number of visited intervals from list of intervals
     span = 1
     while not all(itv[0] == element for element in itv):
         if not all(itv[0] == element for element in itv):
@@ -28,7 +40,28 @@ def identical(itv):
     return span
 
 
-def tree(boundaries):
+def chrs_sizes(chr_sizes: str) -> dict:
+    # dict where chrs are keys and values are list with size of this chr
+    df_sizes = pd.read_csv(chr_sizes, sep="\t", header=None)
+    df_sizes = df_sizes.loc[df_sizes[0].isin(typical_chromosomes(sys.argv[1]))].reset_index(
+        drop=True)
+    df_sizes.columns = df_sizes.columns.map(str)
+    return df_sizes.groupby("0")["1"].agg(list).to_dict()
+
+
+def random(cwalk, chrs_dict, rest_dict):
+    # return random cwalk (mirror image relative to the center of the chromosome)
+    center = [(((i[0] + i[1]) / 2), i[2]) for i in cwalk]  # ex. (139285246.5, 'chr3')
+    reflection = [(chrs_dict[i[1]][0] - i[0], i[1]) for i in center]
+    itv = [(rest_dict[i[1]][i[0]], i[1]) for i in reflection]
+    itv = [i for i in itv if len(i[0]) != 0]  # remove empty sets
+    # not every node has in counterparts in the same chrs
+    reflected = [(list(i[0])[0][0], list(i[0])[0][1], i[1]) for i in itv]
+    return reflected
+
+
+def tad_tree(boundaries):
+    # interval tree where keys are chrs and values are zip object (start, end, mode)
     chrs_dict = {x: y for x, y in boundaries.groupby("chrom")}
     keys, values = [], []
     for key in chrs_dict.keys():
@@ -47,27 +80,85 @@ def tree(boundaries):
     return tree
 
 
-def tad_fractions(one_tad_active, one_tad_passive, two_tad, three_tad, many_tad, name):
-    sns.set_style("whitegrid")
-    plt.figure(figsize=(12, 10))
-    bar1 = plt.bar([i for i in range(3, 16)], one_tad_active, width=1, edgecolor="black", color="royalblue")
-    bar2 = plt.bar([i for i in range(3, 16)], one_tad_passive, bottom=one_tad_active, width=1, edgecolor="black",
-                   color="cornflowerblue")
-    bar3 = plt.bar([i for i in range(3, 16)], two_tad,
-                   bottom=np.add(one_tad_active, one_tad_passive), width=1, edgecolor="black", color="tab:cyan")
-    bar4 = plt.bar([i for i in range(3, 16)], three_tad,
-                   bottom=np.add(np.add(one_tad_active, one_tad_passive), two_tad), width=1, edgecolor="black",
-                   color="lightsteelblue")
-    bar5 = plt.bar([i for i in range(3, 16)], many_tad,
-                   bottom=np.add(np.add(np.add(one_tad_active, one_tad_passive), two_tad), three_tad), width=1,
-                   edgecolor="black", color="slategrey")
-    plt.xlabel("Number of hops")
-    plt.ylabel("Percentage")
-    plt.title(f"Intra- and Inter-TAD C-walks in {sys.argv[1]} cells", fontsize=18)
-    plt.legend([bar1, bar2, bar3, bar4, bar5], ["1 TAD active", "1 TAD passive", "2 TAD", "3 TAD", "many TADs"],
-               loc="upper right",
-               prop={"size": 16})
-    return plt.savefig(f"{name}"), plt.close()
+def counting(tad_dict, graphs, length):
+    i = 0
+    general_in, general_out = 0, 0
+    active, passive, two, three, many = 0, 0, 0, 0, 0  # number of cwalks in eah TAD type
+    for graph in graphs:
+        for cwalk in list(nx.connected_components(graph)):
+            cwalk = list(cwalk)
+            if len(cwalk) == length and all(
+                    cwalk[i][2] == cwalk[0][2] for i in range(0, len(cwalk))):  # only intra-chrs c-walks
+                i += 1  # number of intra-chrs c-walks
+
+                # list of the middle of restriction intervals of each node in cwalk
+                cwalk_boundaries = [((node[0] + node[1]) / 2) for node in cwalk]
+
+                # found list of TAD bounds (itv) for each node in cwalk
+                itv_tad = [tad_dict[cwalk[0][2]][bound] for bound in cwalk_boundaries]
+
+                in_tad = identical(itv_tad)  # number of TAD visited by cwalk
+                modes = [list(i)[0][2] for i in list(itv_tad)]  # list of TAD mode for each node in cwalk
+
+                if in_tad == 1:
+                    general_in += 1  # number of cwalks in one TAD (active or passive)
+                else:
+                    general_out += 1  # number of cwalks in more than one TAD
+                if in_tad == 1 and modes[0] == "active" and all(modes[0] == element for element in modes):
+                    active += 1  # number of cwalks in one active TAD
+                elif in_tad == 1 and modes[0] == "passive" and all(modes[0] == element for element in modes):
+                    passive += 1  # number of cwalks in one passive TAD
+                elif in_tad == 2:
+                    two += 1  # number of cwalks in two TADs (active or passive)
+                elif in_tad == 3:
+                    three += 1  # number of cwalks in three TADs (active or passive)
+                elif in_tad > 3:
+                    many += 1  # number of cwalks in many TADs (active or passive)
+
+    return active, passive, two, three, many, i, general_in, general_out
+
+
+def random_counting(tad_dict, graphs, length, chrs_dict, rest_dict):
+    i = 0
+    general_in, general_out = 0, 0
+    active, passive, two, three, many = 0, 0, 0, 0, 0  # number of random cwalks in eah TAD type
+    for graph in graphs:
+        for cwalk in list(nx.connected_components(graph)):
+            cwalk = list(cwalk)
+
+            if len(cwalk) == length and all(
+                    cwalk[i][2] == cwalk[0][2] for i in range(0, len(cwalk))):  # only intra-chrs c-walks
+
+                random_cwalk = random(cwalk, chrs_dict, rest_dict)
+
+                if len(cwalk) == len(random_cwalk):
+                    i += 1  # number of random intra-chrs c-walks
+
+                    # list of the middle of restriction intervals of each node in cwalk
+                    cwalk_boundaries = [((node[0] + node[1]) / 2) for node in random_cwalk]
+
+                    # found list of TAD bounds (itv) for each node in cwalk
+                    itv_tad = [tad_dict[random_cwalk[0][2]][bound] for bound in cwalk_boundaries]
+
+                    in_tad = identical(itv_tad)  # number of TAD visited by cwalk
+                    modes = [list(i)[0][2] for i in list(itv_tad)]  # list of TAD mode for each node in random cwalk
+
+                    if in_tad == 1:
+                        general_in += 1  # number of random cwalks in one TAD (active or passive)
+                    else:
+                        general_out += 1  # number of random cwalks in more than one TAD
+                    if in_tad == 1 and modes[0] == "active" and all(modes[0] == element for element in modes):
+                        active += 1  # number of cwalks in one active TAD
+                    elif in_tad == 1 and modes[0] == "passive" and all(modes[0] == element for element in modes):
+                        passive += 1  # number of cwalks in one passive TAD
+                    elif in_tad == 2:
+                        two += 1  # number of random cwalks in two TADs (active or passive)
+                    elif in_tad == 3:
+                        three += 1  # number of random cwalks in three TADs (active or passive)
+                    elif in_tad > 3:
+                        many += 1  # number of random cwalks in many TADs (active or passive)
+
+    return active, passive, two, three, many, i, general_in, general_out
 
 
 def tad_count(graphs, tree_dict, name):
@@ -96,48 +187,51 @@ def tad_count(graphs, tree_dict, name):
                 else:
                     other += 1
     data = [active, passive, two_active, two_passive, three_active, three_passive, other]
-    
+
     sns.set_style("whitegrid")
-    fig, ax = plt.subplots(figsize=(12, 10))
+    fig, ax = plt.subplots(figsize=(15, 12))
     ax.bar(labels, data, color="tab:blue", edgecolor="black", width=1)
+    plt.xticks(rotation=30)
     ax.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{0:g}".format(x / 1000) + "k"))
-    plt.ylabel("Number of c-walks")
-    ax.set_title(f"Number of c-walks in each TAD type in {sys.argv[1]} cells", fontsize=18)
+    plt.ylabel("Number of c-walks", fontsize=15)
+    ax.set_title(f"Number of c-walks based on location in TAD types in {sys.argv[1]} cells", fontsize=20)
     return plt.savefig(f"{name}"), plt.close()
 
 
-def mirror(chr_sizes: str) -> float:
-    df_sizes = pd.read_csv(chr_sizes, sep="\t", header=None)
-    df_sizes = df_sizes.loc[df_sizes[0].isin(typical_chromosomes(sys.argv[1]))].reset_index(
-        drop=True)  # sys instead of str
-    df_sizes.columns = df_sizes.columns.map(str)
-    return df_sizes.groupby("0")["1"].agg(list).to_dict()
-
-
-def comparison(general_in, general_out, name):
+def chart_comparison(general_in, general_out, name):
     labels = ["data", "random"]
     sns.set_style("whitegrid")
-    fig, ax = plt.subplots(figsize=(8, 6))
-    bar1 = plt.bar(labels, general_in, label="in TAD", color="tab:blue", edgecolor="black", width=1)
-    bar2 = plt.bar(labels, general_out, bottom=general_in, label="out TAD", color="tab:red", edgecolor="black", width=1)
-    ax.set_title(f"Fraction of c-walks contained in one TAD and the others outside \n"
+    fig, ax = plt.subplots(figsize=(10, 8))
+    bar1 = plt.bar(labels, general_in, label="in a single TAD", color="tab:blue", edgecolor="black", width=1)
+    bar2 = plt.bar(labels, general_out, bottom=general_in, label="in more than one TAD", color="tab:red", edgecolor="black", width=1)
+    ax.set_title(f"Fraction of c-walks contained in one TAD and c-walks in more than one TAD \n"
                  f"Comparison c-walks from data and random in {sys.argv[1]} cells", fontsize=16)
     plt.xlabel("Number of c-walks")
     plt.ylabel("Percentage")
-    plt.legend([bar1, bar2], ["in TAD", "out TAD"], loc="upper right")
+    plt.legend([bar1, bar2], ["in a single TAD", "in more than one TAD"], loc="upper right")
     return plt.savefig(f"{name}"), plt.close()
 
 
-def domains(boundaries, name):
-    active_boundaries = boundaries.loc[boundaries["mode"] == "active"].dropna().reset_index(drop=True)
-    passive_boundaries = boundaries.loc[boundaries["mode"] == "passive"].dropna().reset_index(drop=True)
+def tad_fractions(one_tad_active, one_tad_passive, two_tad, three_tad, many_tad, name):
     sns.set_style("whitegrid")
-    plt.figure(figsize=(10, 8))
-    sns.distplot(active_boundaries["size"], hist=False, color="red")
-    sns.distplot(passive_boundaries["size"], hist=False, color="black")
-    plt.title("Domain size distribution")
-    plt.legend(labels=["Active", "Passive"])
-    plt.xlabel("Domain size [bp]")
+    plt.figure(figsize=(12, 10))
+    bar1 = plt.bar([i for i in range(3, 16)], one_tad_active, width=1, edgecolor="black", color="royalblue")
+    bar2 = plt.bar([i for i in range(3, 16)], one_tad_passive, bottom=one_tad_active, width=1, edgecolor="black",
+                   color="cornflowerblue")
+    bar3 = plt.bar([i for i in range(3, 16)], two_tad,
+                   bottom=np.add(one_tad_active, one_tad_passive), width=1, edgecolor="black", color="tab:cyan")
+    bar4 = plt.bar([i for i in range(3, 16)], three_tad,
+                   bottom=np.add(np.add(one_tad_active, one_tad_passive), two_tad), width=1, edgecolor="black",
+                   color="lightsteelblue")
+    bar5 = plt.bar([i for i in range(3, 16)], many_tad,
+                   bottom=np.add(np.add(np.add(one_tad_active, one_tad_passive), two_tad), three_tad), width=1,
+                   edgecolor="black", color="slategrey")
+    plt.xlabel("Number of hops")
+    plt.ylabel("Percentage")
+    plt.title(f"Intra- and Inter-TAD c-walks in {sys.argv[1]} cells", fontsize=18)
+    plt.legend([bar1, bar2, bar3, bar4, bar5], ["1 TAD active", "1 TAD passive", "2 TAD", "3 TAD", "many TADs"],
+               loc="upper right",
+               prop={"size": 16})
     return plt.savefig(f"{name}"), plt.close()
 
 
@@ -148,7 +242,7 @@ def hop_count(active, passive, two, three, many, name):
     three = three[:6]
     many = many[:6]
     sns.set_style("whitegrid")
-    fig, ax = plt.subplots(figsize=(12, 10))
+    fig, ax = plt.subplots(figsize=(10, 8))
     bar1 = plt.bar([i for i in range(3, 9)], active, width=1, edgecolor="black", color="royalblue")
     bar2 = plt.bar([i for i in range(3, 9)], passive, bottom=active, width=1, edgecolor="black",
                    color="cornflowerblue")
@@ -166,184 +260,149 @@ def hop_count(active, passive, two, three, many, name):
     plt.title(f"Intra- and inter-TAD c-walks in {sys.argv[1]} cells", fontsize=18)
     plt.legend([bar1, bar2, bar3, bar4, bar5], ["1 TAD active", "1 TAD passive", "2 TAD", "3 TAD", "many TADs"],
                loc="upper right",
-               prop={"size": 16})
+               prop={"size": 12})
     return plt.savefig(f"{name}"), plt.close()
 
 
-def random(cwalk, mirror_dict, rest_dict):
-    # return random cwalk (mirror image relative to the center of the chromosome)
-    center = [(((i[0] + i[1]) / 2), i[2]) for i in cwalk]  # ex. (139285246.5, 'chr3')
-    reflection = [(mirror_dict[i[1]][0] - i[0], i[1]) for i in center]
-    itv = [(rest_dict[i[1]][i[0]], i[1]) for i in reflection]
-    itv = [i for i in itv if len(i[0]) != 0]  # remove empty sets
-    reflected = [(list(i[0])[0][0], list(i[0])[0][1], i[1]) for i in itv]
-    return reflected
-
-
-def random_counting(mirror_dict, rest_dict, tree_dict, graphs, length):
-    i = 0
-    rdm_general_in, rdm_general_out = 0, 0
-    active, passive, two, three, many = 0, 0, 0, 0, 0
-    for graph in graphs:
-        for cwalk in list(nx.connected_components(graph)):
-            cwalk = list(cwalk)
-            if len(cwalk) == length:
-                if all(cwalk[i][2] == cwalk[0][2] for i in range(0, len(cwalk))):  # only intra chrs cwalks
-                    reflected = random(cwalk, mirror_dict, rest_dict)
-                    if len(reflected) == len(cwalk):
-                        i += 1
-                        cwalk_boundaries = [((node[0] + node[1]) / 2) for node in reflected]
-                        itv_tad = [tree_dict[reflected[0][2]][bound] for bound in cwalk_boundaries]
-                        in_tad = identical(itv_tad)
-                        modes = [list(i)[0][2] for i in list(itv_tad)]
-                        if in_tad == 1:
-                            rdm_general_in += 1
-                        else:
-                            rdm_general_out += 1
-                        if in_tad == 1 and modes[0] == "active" and all(modes[0] == element for element in modes):
-                            active += 1
-                        elif in_tad == 1 and modes[0] == "passive" and all(modes[0] == element for element in modes):
-                            passive += 1
-                        elif in_tad == 2:
-                            two += 1
-                        elif in_tad == 3:
-                            three += 1
-                        elif in_tad > 3:
-                            many += 1
-
-    return [round((active / i) * 100, 2), round((passive / i) * 100, 2), round((two / i) * 100, 2),
-            round((three / i) * 100, 2), round((many / i) * 100, 2), i, rdm_general_in, rdm_general_out]
-
-
-def counting(tree_dict, graphs, length):
-    i = 0
-    general_in, general_out = 0, 0
-    active, passive, two, three, many = 0, 0, 0, 0, 0
-    for graph in graphs:
-        for cwalk in list(nx.connected_components(graph)):
-            cwalk = list(cwalk)
-            if len(cwalk) == length and all(cwalk[i][2] == cwalk[0][2] for i in range(0, len(cwalk))):
-                i += 1
-                cwalk_boundaries = [((node[0] + node[1]) / 2) for node in cwalk]
-                itv_tad = [tree_dict[cwalk[0][2]][bound] for bound in cwalk_boundaries]
-                in_tad = identical(itv_tad)
-                modes = [list(i)[0][2] for i in list(itv_tad)]
-                if in_tad == 1:
-                    general_in += 1
-                else:
-                    general_out += 1
-                if in_tad == 1 and modes[0] == "active" and all(modes[0] == element for element in modes):
-                    active += 1
-                elif in_tad == 1 and modes[0] == "passive" and all(modes[0] == element for element in modes):
-                    passive += 1
-                elif in_tad == 2:
-                    two += 1
-                elif in_tad == 3:
-                    three += 1
-                elif in_tad > 3:
-                    many += 1
-
-    return active, passive, two, three, many, i, general_in, general_out
+def domains(boundaries, name):
+    active_boundaries = boundaries.loc[boundaries["mode"] == "active"].dropna().reset_index(drop=True)
+    passive_boundaries = boundaries.loc[boundaries["mode"] == "passive"].dropna().reset_index(drop=True)
+    sns.set_style("whitegrid")
+    plt.figure(figsize=(10, 8))
+    sns.distplot(active_boundaries["size"], hist=False, color="red")
+    sns.distplot(passive_boundaries["size"], hist=False, color="black")
+    plt.title(f"{sys.argv[1]} domains size distribution")
+    plt.legend(labels=["Active", "Passive"])
+    plt.xlabel("Domain size [bp]")
+    return plt.savefig(f"{name}"), plt.close()
 
 
 def main():
     graphs, _ = load_files(sys.argv[2], load_cwalk_graph)  # load .txt cwalk graph
-    df_boundaries = boundaries(sys.argv[3])  # dict where keys are chrs and values are TADs active boundaries
-    mirror_dict = mirror(sys.argv[4])
-    restrictions_dict = parse_bedfile(sys.argv[5], sys.argv[1])  # .bed file
+    tad_dict = tad_tree(boundaries(sys.argv[3]))  # interval tree dict with TAD domains
+    chrs_dict = chrs_sizes(sys.argv[4])
+
+    # plot domains size distribution
+    domains(boundaries(sys.argv[3]), sys.argv[11])
+
+    # Return dict where chrs are keys and values are list of restriction itvs
+    restrictions_dict = parse_bedfile(sys.argv[5], sys.argv[1])
+
+    # Interval tree construction, separate for each chromosome
     rest_dict = dict()  # ex. tree_dict["chr1"] will be an object of type IntervalTree
-    for chr in typical_chromosomes(sys.argv[1]):  # sys.argv[1]
-        """ Interval tree construction, separate for each chromosome """
+    for chr in typical_chromosomes(sys.argv[1]):
         restrictions = restrictions_dict[chr][1].tolist()
         intervals = [(i, j) for i, j in zip(restrictions[:-1], restrictions[1:])]
         rest_dict[chr] = IntervalTree.from_tuples(intervals)
 
-    tree_dict = tree(df_boundaries)
+    lst_active, lst_passive, lst_two, lst_three, lst_many, lst_i, lst_general_in, lst_general_out = \
+        [], [], [], [], [], [], [], []
+    lst_rdm_active, lst_rdm_passive, lst_rdm_two, lst_rdm_three, lst_rdm_many, lst_rdm_i, lst_rdm_general_in, lst_rdm_general_out = \
+        [], [], [], [], [], [], [], []
 
-    one_tad_active, one_tad_passive, two_tad, three_tad, many_tad = [], [], [], [], []
-    count = []
-    count_active, count_passive, count_two, count_three, count_many = [], [], [], [], []
-    rdm_one_tad_active, rdm_one_tad_passive, rdm_two_tad, rdm_three_tad, rdm_many_tad = [], [], [], [], []
-    rdm_count = []
-    general_in_lst, general_out_lst = [], []
-    rdm_general_in_lst, rdm_general_out_lst = [], []
-    for hop in range(3, 16):
-        active, passive, two, three, many, i, general_in, general_out = counting(tree_dict, graphs, hop)
-        one_tad_active.append(round((active / i) * 100, 2))  # fraction of cwalks inside one TAD of particular length
-        one_tad_passive.append(round((passive / i) * 100, 2))
-        two_tad.append(round((two / i) * 100, 2))
-        three_tad.append(round((three / i) * 100, 2))
-        many_tad.append(round((many / i) * 100, 2))
-        count.append(i)
+    count_active, count_passive, count_two, count_three, count_many, count_general_in, count_general_out = \
+        [], [], [], [], [], [], []
+    rdm_count_active, rdm_count_passive, rdm_count_two, rdm_count_three, rdm_count_many, rdm_count_general_in, rdm_count_general_out = \
+        [], [], [], [], [], [], []
 
-        count_active.append(active)
-        count_passive.append(passive)
-        count_two.append(two)
-        count_three.append(three)
-        count_many.append(many)
+    for length in range(3, 30):
+        active, passive, two, three, many, i, general_in, general_out = counting(tad_dict, graphs, length)
+        # list of % of intra-chrs cwalks of each length
+        if i != 0:
+            count_general_in.append(general_in)
+            count_general_out.append(general_out)
 
-        general_in_lst.append(general_in)
-        general_out_lst.append(general_out)
+            lst_general_in.append(round((general_in / i) * 100, 2))  # % of intra-chrs cwalks in a single TAD
+            lst_general_out.append(round((general_out / i) * 100, 2))  # % of intra-chrs cwalks in more than one TAD
+            lst_i.append(i)  # number of cwalks of each length
 
-        rdm_active, rdm_passive, rdm_two, rdm_three, rdm_many, j, rdm_general_in, rdm_general_out = \
-            random_counting(mirror_dict, rest_dict, tree_dict, graphs, hop)
-        rdm_one_tad_active.append(rdm_active)  # fraction of radomm cwalks inside one TAD of particular length
-        rdm_one_tad_passive.append(rdm_passive)
-        rdm_two_tad.append(rdm_two)
-        rdm_three_tad.append(rdm_three)
-        rdm_many_tad.append(rdm_many)
-        rdm_count.append(j)
+            rdm_active, rdm_passive, rdm_two, rdm_three, rdm_many, rdm_i, rdm_general_in, rdm_general_out = \
+                random_counting(tad_dict, graphs, length, chrs_dict, rest_dict)
 
-        rdm_general_in_lst.append(rdm_general_in)
-        rdm_general_out_lst.append(rdm_general_out)
+            rdm_count_general_in.append(rdm_general_in)
+            rdm_count_general_out.append(rdm_general_out)
+
+            lst_rdm_general_in.append(round((rdm_general_in / i) * 100, 2))  # % of intra-chrs cwalks in a single TAD
+            lst_rdm_general_out.append(round((rdm_general_out / i) * 100, 2))  # % of intra-chrs cwalks in more than one TAD
+            lst_rdm_i.append(rdm_i)  # number of random cwalks of each length
 
     """ Plotting """
-    tad_fractions(one_tad_active, one_tad_passive, two_tad, three_tad, many_tad, f"{sys.argv[6]}")
-    tad_fractions(rdm_one_tad_active, rdm_one_tad_passive, rdm_two_tad, rdm_three_tad, rdm_many_tad, f"{sys.argv[7]}")
-    tad_count(graphs, tree_dict, sys.argv[8])
-    comparison([round((sum(general_in_lst) / sum(count)) * 100, 2),
-                round((sum(rdm_general_in_lst) / sum(rdm_count)) * 100, 2)],
-               [round((sum(general_out_lst) / sum(count)) * 100, 2),
-                round((sum(rdm_general_out_lst) / sum(rdm_count)) * 100, 2)], sys.argv[9])
-    hop_count(count_active, count_passive, count_two, count_three, count_many, sys.argv[10])
-    domains(df_boundaries, sys.argv[11])
+    chart_comparison([round((sum(count_general_in) / sum(lst_i)) * 100, 2),
+                      round((sum(rdm_count_general_in) / sum(lst_rdm_i)) * 100, 2)],
+                     [round((sum(count_general_out) / sum(lst_i)) * 100, 2),
+                      round((sum(rdm_count_general_out) / sum(lst_rdm_i)) * 100, 2)], sys.argv[9])
 
-    print(f"Total number of c-walks: {sum(count)}")
-    print(f"Total number of random c-walks: {sum(rdm_count)}")
+    print(f"Total number of c-walks: {sum(lst_i)}")
+    print(f"Total number of random c-walks: {sum(lst_rdm_i)}")
+
+    print(f"Percentage of intra-chrs cwalks in a single TAD: {round((sum(count_general_in) / sum(lst_i)) * 100, 2)}%")
+    print(f"Percentage of intra-chrs cwalks in more than one TAD: {round((sum(count_general_out) / sum(lst_i)) * 100, 2)}%")
+
+    print(f"Percentage of random intra-chrs cwalks in a single TAD: {round((sum(rdm_count_general_in) / sum(lst_rdm_i)) * 100, 2)}%")
+    print(f"Percentage of random intra-chrs cwalks in more than one TAD: {round((sum(rdm_count_general_out) / sum(lst_rdm_i)) * 100, 2)}%")
 
     print(
-        f"Number of c-walks from data inside one TAD: {[sum(general_in_lst)][0]} and others: {[sum(general_out_lst)][0]}")
+        f"Number of c-walks from data inside one TAD: {[sum(count_general_in)][0]} and in more than one TAD:"
+        f" {[sum(count_general_out)][0]}")
     print(
-        f"Number of random c-walks inside one TAD: {[sum(rdm_general_in_lst)][0]} and others: {[sum(rdm_general_out_lst)][0]}")
-    print(f"We are considering sample consists with {sum(count) + sum(rdm_count)} c-walks "
+        f"Number of random c-walks inside one TAD: {[sum(rdm_count_general_in)][0]} and in more than one TAD: "
+        f"{[sum(rdm_count_general_out)][0]}")
+    print(f"We are considering sample consists with {sum(lst_i) + sum(lst_rdm_i)} c-walks "
           f"for which we examine two features (c-walks from data and random)."
-          f" Significance level: 0.05")  # only intra-chrs
+          f" Significance level: 0.05")
 
-    from statsmodels.stats.contingency_tables import cochrans_q
-    print("Cochran condition:")
-    table = np.array([[[sum(general_in_lst)][0], [sum(general_out_lst)][0]],
-                      [[sum(rdm_general_in_lst)][0], [sum(rdm_general_out_lst)][0]]])
-    cochran = cochrans_q(table, return_object=True)
-    print(cochran)
-    print("Cochran condition is satisfied")
-
-    print("Chi-square test:")
-    from scipy.stats import chi2_contingency
-    stat, p, dof, expected = chi2_contingency(table)  # Pearson's Chi-square test
-    print(f"Chi-square statistics: {stat}")
-    print(f"Observed: {table}")
-    print(f"Expected: {expected}")
-    print(f"Degrees of freedom: {dof}")
-    print(f"The relationship is present. P-value: {p}")
+    table = np.array([[[sum(count_general_in)][0], [sum(count_general_out)][0]],
+                      [[sum(rdm_count_general_in)][0], [sum(rdm_count_general_out)][0]]])
 
     print("Fisher test:")
     from scipy.stats import fisher_exact
+
     oddsr, p = fisher_exact(table, alternative="two-sided")
     print(f"Two-sided Fisher: {oddsr} and p-value: {p}")
 
     oddsr, p = fisher_exact(table, alternative="greater")
     print(f"One-sided Fisher: {oddsr} and p-value: {p}")
 
-    
+    for length in range(3, 16):
+        active, passive, two, three, many, i, general_in, general_out = counting(tad_dict, graphs, length)
+        # list of % of intra-chrs cwalks of each length
+        if i != 0:
+            lst_active.append(round((active / i) * 100, 2))  # % of intra-chrs cwalks in a one active TAD
+            lst_passive.append(round((passive / i) * 100, 2))  # % of intra-chrs cwalks in a one passive TAD
+            lst_two.append(round((two / i) * 100, 2))  # % of intra-chrs cwalks in two TADs
+            lst_three.append(round((three / i) * 100, 2))  # % of intra-chrs cwalks three TADs
+            lst_many.append(round((many / i) * 100, 2))  # % of intra-chrs cwalks in many TADs
+
+            # list of intra-chrs cwalks counts of each length
+            count_active.append(active)
+            count_passive.append(passive)
+            count_two.append(two)
+            count_three.append(three)
+            count_many.append(many)
+
+            rdm_active, rdm_passive, rdm_two, rdm_three, rdm_many, rdm_i, rdm_general_in, rdm_general_out = \
+                random_counting(tad_dict, graphs, length, chrs_dict, rest_dict)
+            # list of % of intra-chrs cwalks of each length
+            lst_rdm_active.append(round((rdm_active / rdm_i) * 100, 2))  # % of intra-chrs cwalks in a one active TAD
+            lst_rdm_passive.append(round((rdm_passive / rdm_i) * 100, 2))  # % of intra-chrs cwalks in a one passive TAD
+            lst_rdm_two.append(round((rdm_two / rdm_i) * 100, 2))  # % of intra-chrs cwalks in two TADs
+            lst_rdm_three.append(round((rdm_three / rdm_i) * 100, 2))  # % of intra-chrs cwalks three TADs
+            lst_rdm_many.append(round((rdm_many / rdm_i) * 100, 2))  # % of intra-chrs cwalks in many TADs
+
+            # list of intra-chrs random cwalks counts of each length
+            rdm_count_active.append(active)
+            rdm_count_passive.append(passive)
+            rdm_count_two.append(two)
+            rdm_count_three.append(three)
+            rdm_count_many.append(many)
+
+    """ Plotting """
+    hop_count(count_active, count_passive, count_two, count_three, count_many, sys.argv[10])
+    tad_count(graphs, tad_dict, sys.argv[8])
+    tad_fractions(lst_active, lst_passive, lst_two, lst_three, lst_many, sys.argv[6])
+    tad_fractions(lst_rdm_active, lst_rdm_passive, lst_rdm_two, lst_rdm_three, lst_rdm_many,
+                  sys.argv[7])
+
+
 if __name__ == '__main__':
     main()
