@@ -12,6 +12,15 @@ import statistics
 import sys
 
 
+import matplotlib.pylab as pylab
+params = {'legend.fontsize': 'x-large',
+         'axes.labelsize': 'x-large',
+         'axes.titlesize':'x-large',
+         'xtick.labelsize':'xx-large',
+         'ytick.labelsize':'xx-large'}
+pylab.rcParams.update(params)
+
+
 def load_cwalk_graph(cwalk_graph):
     import pickle
     return pickle.load(open(cwalk_graph, "rb"))
@@ -38,7 +47,7 @@ def fractions(one_chr, two_chr, many_chr, name):
     bar3 = plt.bar([i for i in range(3, 16)], many_chr,
                    bottom=np.add(one_chr, two_chr), width=1, edgecolor="black", color="tab:gray")
     plt.xlabel("Number of hops", fontsize=16)
-    plt.ylabel("Fraction", fontsize=16)
+    plt.ylabel("Percentage [%]", fontsize=16)
     plt.title(f"Fraction of c-walks in each class in {sys.argv[1]} cells", fontsize=18)
     plt.legend([bar1, bar2, bar3], ["one chromosome (class I)",
                                     "two chromosomes (class II)",
@@ -54,7 +63,7 @@ def barh(graphs, labels, name):
     fig, ax = plt.subplots(figsize=(12, 16))
     ax.barh([label[:-11] for label in labels], data, color="tab:blue", edgecolor="black", height=1)
     ax.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{0:g}".format(x / 1000) + "k"))
-    ax.set_title(f"Number of c-walks in each graph from {sys.argv[1]} cells", fontsize=18)
+    ax.set_title(f"Number of c-walks in each graph in {sys.argv[1]} cells", fontsize=18)
     return plt.savefig(f"{name}"), plt.close()
 
 
@@ -81,17 +90,17 @@ def stats(graphs, name):
     print(f"Mode: {statistics.mode(lengths)}")
     print(f"Standard deviation: {round(statistics.stdev(lengths), 2)}")
     sns.set_style("whitegrid")
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 8))
-    plt.suptitle(f"Distribution of c-walks length from {sys.argv[1]} cells", fontsize=20)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
+    plt.suptitle(f"Distribution of c-walks length in {sys.argv[1]} cells", fontsize=20)
     ax1.hist(lengths, color="tab:blue", edgecolor="black")
-    ax2.hist([x for x in lengths if x <= 6], color="tab:blue", edgecolor="black")
+    ax2.hist([x for x in lengths if x <= 6], color="tab:blue", edgecolor="black", rwidth=1)
     ax1.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{0:g}".format(x / 1000) + "k"))
     ax2.yaxis.set_major_formatter(ticker.FuncFormatter(lambda x, pos: "{0:g}".format(x / 1000) + "k"))
     ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax1.set_xlabel("C-walks length", fontsize=16)
-    ax1.set_ylabel("Frequency of occurrence", fontsize=16)
-    ax2.set_xlabel("C-walks length", fontsize=16)
-    ax2.set_ylabel("Frequency of occurrence", fontsize=16)
+    ax1.set_xlabel("c-walks length", fontsize=16)
+    ax1.set_ylabel("Number of c-walks", fontsize=16)
+    ax2.set_xlabel("c-walks length", fontsize=16)
+    ax2.set_ylabel("Number of c-walks", fontsize=16)
     return plt.savefig(f"{name}"), plt.close()
 
 
@@ -142,4 +151,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
