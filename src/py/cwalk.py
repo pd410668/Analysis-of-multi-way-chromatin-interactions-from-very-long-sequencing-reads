@@ -52,10 +52,12 @@ def matching_edges(interval_tree_dict: dict, positions: zip):
 def cwalk_construction(edges):
     """ Resolve the C-walk graph """
     P = nx.Graph()
+    edge_index = 0
     for u, v, a in edges:
         if (u not in P or P.degree[u] < 2) and (v not in P or P.degree[v] < 2):
-            P.add_edge(u, v, weight=a["weight"])
-
+            P.add_edge(u, v, weight=a["weight"], index=edge_index)
+            edge_index += 1
+            
     for cwalk in list(nx.connected_components(P)):
         if len(cwalk) < 3:
             for node in cwalk:
