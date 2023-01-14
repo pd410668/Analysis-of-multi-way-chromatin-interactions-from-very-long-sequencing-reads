@@ -206,7 +206,6 @@ def chart_comparison(general_in, general_out, name):
     bar2 = plt.bar(labels, general_out, bottom=general_in, label="in more than one TAD", color="tab:red", edgecolor="black", width=1)
     ax.set_title(f"Fraction of c-walks contained in one TAD and c-walks in more than one TAD \n"
                  f"Comparison c-walks from data and random in {sys.argv[1]} cells", fontsize=16)
-    plt.xlabel("Number of c-walks")
     plt.ylabel("Percentage")
     plt.legend([bar1, bar2], ["in a single TAD", "in more than one TAD"], loc="upper right")
     return plt.savefig(f"{name}"), plt.close()
@@ -272,8 +271,8 @@ def domains(boundaries, name):
     sns.distplot(active_boundaries["size"], hist=False, color="red")
     sns.distplot(passive_boundaries["size"], hist=False, color="black")
     plt.title(f"{sys.argv[1]} domains size distribution")
-    plt.legend(labels=["Active", "Passive"])
-    plt.xlabel("Domain size [bp]")
+    plt.legend(labels=["Active", "Inactive"])
+    plt.xlabel("Domain size [Mb]")
     return plt.savefig(f"{name}"), plt.close()
 
 
@@ -292,6 +291,8 @@ def main():
     rest_dict = dict()  # ex. tree_dict["chr1"] will be an object of type IntervalTree
     for chr in typical_chromosomes(sys.argv[1]):
         restrictions = restrictions_dict[chr][1].tolist()
+        restrictions[0] = 0
+        restrictions[-1] = chr_dict[chr][0]
         intervals = [(i, j) for i, j in zip(restrictions[:-1], restrictions[1:])]
         rest_dict[chr] = IntervalTree.from_tuples(intervals)
 
