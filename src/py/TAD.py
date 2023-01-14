@@ -55,7 +55,6 @@ def random(cwalk, chrs_dict, rest_dict):
     reflection = [(chrs_dict[i[1]][0] - i[0], i[1]) for i in center]
     itv = [(rest_dict[i[1]][i[0]], i[1]) for i in reflection]
     itv = [i for i in itv if len(i[0]) != 0]  # remove empty sets
-    # not every node has in counterparts in the same chrs
     reflected = [(list(i[0])[0][0], list(i[0])[0][1], i[1]) for i in itv]
     return reflected
 
