@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from cwalk import parse_bedfile
-from analysis import load_cwalk_graph, load_files
+from cwalk_analysis import load_cwalk_graph, load_files
 import pandas as pd
 import networkx as nx
 from intervaltree import Interval, IntervalTree
