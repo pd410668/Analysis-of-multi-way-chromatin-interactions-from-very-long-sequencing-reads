@@ -291,7 +291,8 @@ def main():
     for chr in typical_chromosomes(sys.argv[1]):
         restrictions = restrictions_dict[chr][1].tolist()
         restrictions[0] = 0
-        restrictions[-1] = chr_dict[chr][0]
+        restrictions[-1] = chrs
+_dict[chr][0]
         intervals = [(i, j) for i, j in zip(restrictions[:-1], restrictions[1:])]
         rest_dict[chr] = IntervalTree.from_tuples(intervals)
 
