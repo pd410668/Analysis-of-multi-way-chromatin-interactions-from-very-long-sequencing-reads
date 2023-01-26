@@ -227,7 +227,7 @@ def tad_fractions(one_tad_active, one_tad_passive, two_tad, three_tad, many_tad,
     plt.xlabel("Number of hops")
     plt.ylabel("Percentage")
     plt.title(f"Intra- and Inter-TAD c-walks in {sys.argv[1]} cells", fontsize=18)
-    plt.legend([bar1, bar2, bar3, bar4, bar5], ["1 TAD active", "1 TAD passive", "2 TAD", "3 TAD", "many TADs"],
+    plt.legend([bar1, bar2, bar3, bar4, bar5], ["1 TAD active", "1 TAD passive", "2 TAD", "3 TAD", "more TADs"],
                loc="upper right",
                prop={"size": 16})
     return plt.savefig(f"{name}"), plt.close()
@@ -256,7 +256,7 @@ def hop_count(active, passive, two, three, many, name):
     plt.xlabel("Number of hops")
     plt.ylabel("Number of c-walks")
     plt.title(f"Intra- and inter-TAD c-walks in {sys.argv[1]} cells", fontsize=18)
-    plt.legend([bar1, bar2, bar3, bar4, bar5], ["1 TAD active", "1 TAD passive", "2 TAD", "3 TAD", "many TADs"],
+    plt.legend([bar1, bar2, bar3, bar4, bar5], ["1 TAD active", "1 TAD passive", "2 TAD", "3 TAD", "more TADs"],
                loc="upper right",
                prop={"size": 12})
     return plt.savefig(f"{name}"), plt.close()
