@@ -1,31 +1,38 @@
-# SAMPLES=["nsp_k562_V_8_R1", "nsp_k562_V_8_R2"]  # human 
-SAMPLES=["ms_mesc_III_32_R1", "ms_mesc_III_32_R2"]  # mouse
+SAMPLES=["hs_k562_I_1_R1", "hs_k562_I_1_R2"]  # human 
+# SAMPLES=["ms_mesc_III_32_R1", "ms_mesc_III_32_R2"]  # mouse
+
 RES = list(set([i.rsplit("_R")[0] for i in SAMPLES]))
 
 rule all:
 	input:
 		# human
-		# expand("data/charts/k562/{res}_RvsR.png", res=RES),
-		# expand("data/charts/k562/{res}_0_5000_R.png", res=RES),
-		# expand("data/charts/k562/{res}_500_10000_R.png", res=RES),
-		# expand("data/charts/k562/{res}_strand_1vs2.png", res=RES),
-		# expand("data/charts/k562/{res}_0_5000_S.png", res=RES),
-		# expand("data/charts/k562/{res}_500_10000_S.png", res=RES),
-		# expand("data/charts/k562/{res}_log10_500_1000.png", res=RES),
-		# expand("data/charts/TAD/k562/tad_fraction_data_human.png"),
-		# expand("data/charts/TAD/k562/tad_fraction_random_human.png"),
-		# expand("data/charts/TAD/k562/tad_types_human.png"),
-		# expand("data/charts/TAD/k562/tad_comparision_human.png"),
-		# expand("data/charts/TAD/k562/tad_counts_human.png"),
-		# expand("data/charts/TAD/k562/tad_doms_human.png" )
-		# expand("data/cwalks/k562/txt/{res}_cwalks.txt", res=RES),  
-		# expand("data/cwalks/k562/bed/{res}_cwalks.bed", res=RES),
-		# expand("data/charts/cwalks/k562/hist_intra_human.png"),
-		# expand("data/charts/cwalks/k562/human_fractions.png"),
-		# expand("data/charts/cwalks/k562/cwalk_human_barh.png")
-		# expand("data/charts/k562/human_barh.png"),
-		# expand("data/charts/directionality/k562")
+		expand("data/cwalks/k562/txt/{res}_cwalks.txt", res=RES),
+		expand("data/cwalks/k562/bed/{res}_cwalks.bed", res=RES),
+		expand("data/charts/k562/{res}_RvsR.png", res=RES),
+		expand("data/charts/k562/{res}_0_5000_R.png", res=RES),
+		expand("data/charts/k562/{res}_500_10000_R.png", res=RES),
+		expand("data/charts/k562/{res}_strand_1vs2.png", res=RES),
+		expand("data/charts/k562/{res}_0_5000_S.png", res=RES),
+		expand("data/charts/k562/{res}_500_10000_S.png", res=RES),
+		expand("data/charts/k562/{res}_log10_500_1000.png", res=RES),
+		expand("data/charts/TAD/k562/tad_fraction_data_human.png"),
+		expand("data/charts/TAD/k562/tad_fraction_random_human.png"),
+		expand("data/charts/TAD/k562/tad_types_human.png"),
+		expand("data/charts/TAD/k562/tad_comparision_human.png"),
+		expand("data/charts/TAD/k562/tad_counts_human.png"),
+		expand("data/charts/TAD/k562/tad_doms_human.png"),
+		expand("data/charts/k562/barh/human_barh.png"),
+		expand("data/cwalks/k562/txt/{res}_cwalks.txt", res=RES),  
+		expand("data/cwalks/k562/bed/{res}_cwalks.bed", res=RES),
+		expand("data/charts/cwalks/k562/human_cwalk_hists.png"),
+		expand("data/charts/cwalks/k562/human_fractions.png"),
+		expand("data/charts/cwalks/k562/cwalk_human_barh.png"),
+		expand("data/charts/TF/k562/human_TF.png"),
+		expand("data/charts/directionality/k562/human_directionality.png")
+		
 		# mouse
+		# expand("data/cwalks/mesc/txt/{res}_cwalks.txt", res=RES),
+		# expand("data/cwalks/mesc/bed/{res}_cwalks.bed", res=RES),
 		# expand("data/charts/mesc/{res}_RvsR.png", res=RES),
 		# expand("data/charts/mesc/{res}_0_5000_R.png", res=RES),
 		# expand("data/charts/mesc/{res}_500_10000_R.png", res=RES),
@@ -38,38 +45,37 @@ rule all:
 		# expand("data/charts/TAD/mesc/tad_types_mouse.png"),
 		# expand("data/charts/TAD/mesc/tad_comparision_mouse.png"),
 		# expand("data/charts/TAD/mesc/tad_counts_mouse.png"),
-		# expand("data/charts/TAD/mesc/tad_doms_mouse.png" )
-		# expand("data/cwalks/mesc/bed/{res}_cwalks.bed", res=RES), 
-		# expand("data/cwalks/mesc/txt/{res}_cwalks.txt", res=RES)
-		# expand("data/charts/cwalks/k562/hist_intra_mouse.png"),
-		# expand("data/charts/cwalks/k562/human_fractions.png"),
-		# expand("data/charts/cwalks/k562/cwalk_mouse_barh.png")
-		# expand("data/charts/mesc/mouse_barh.png"),
-		# expand("data/charts/directionality/mesc"),
+		# expand("data/charts/TAD/mesc/tad_doms_mouse.png" ),
+		# expand("data/charts/cwalks/mesc/hist_intra_mouse.png"),
+		# expand("data/charts/cwalks/mesc/human_fractions.png"),
+		# expand("data/charts/cwalks/mesc/cwalk_mouse_barh.png"),
+		# expand("data/charts/mesc/barh/mouse_barh.png"),
+		# expand("data/charts/directionality/mesc/mouse_directionality.png")
+
 
 rule digestion:
 	input:
-		# "data/fastq/k562/{sample}.fastq"  # human
-		"data/fastq/mesc/{sample}.fastq"  # mouse
+		"data/fastq/k562/{sample}.fastq"  # human
+		# "data/fastq/mesc/{sample}.fastq"  # mouse
 	output:
-		# "data/digested/k562/{sample}.digested.fastq"  # human
-		"data/digested/mesc/{sample}.digested.fastq"  # mouse
+		"data/digested/k562/{sample}.digested.fastq"  # human
+		# "data/digested/mesc/{sample}.digested.fastq"  # mouse
 	shell:
 		"src/py/digestion.py {input} {output}"
 
 rule fastq2bam:
 	input:
-		# index = "data/Bowtie2Index/hg19",  # human
-		index = "data/Bowtie2Index/mm9",  # mouse
+		index = "data/Bowtie2Index/hg19",  # human
+		# index = "data/Bowtie2Index/mm9",  # mouse
 
-		# fastq = "data/digested/k562/{sample}.digested.fastq"  # human
-		fastq = "data/digested/mesc/{sample}.digested.fastq"  # mouse 
+		fastq = "data/digested/k562/{sample}.digested.fastq"  # human
+		# fastq = "data/digested/mesc/{sample}.digested.fastq"  # mouse 
 	output:
-		# "data/bam/k562/{sample}.bowtie2.bam"  # human
-		"data/bam/mesc/{sample}.bowtie2.bam"  # mouse
+		"data/bam/k562/{sample}.bowtie2.bam"  # human
+		# "data/bam/mesc/{sample}.bowtie2.bam"  # mouse
 	shell:
-		# "bowtie2 -x {input.index}/hg19 -U {input.fastq} | samtools view -bS -> {output}" # human
-		"bowtie2 -x {input.index}/mm9 -U {input.fastq} | samtools view -bS -> {output}" # mouse
+		"bowtie2 -x {input.index}/hg19 -U {input.fastq} | samtools view -bS -> {output}" # human
+		# "bowtie2 -x {input.index}/mm9 -U {input.fastq} | samtools view -bS -> {output}" # mouse
 
 
 
@@ -93,25 +99,25 @@ rule fastq2bam:
 
 rule filtering:
 	input:
-		# expand("data/bam/k562/{sample}.bowtie2.bam", sample=SAMPLES) # human
-		expand("data/bam/mesc/{sample}.bowtie2.bam", sample=SAMPLES)  # mouse
+		expand("data/bam/k562/{sample}.bowtie2.bam", sample=SAMPLES) # human
+		# expand("data/bam/mesc/{sample}.bowtie2.bam", sample=SAMPLES)  # mouse
 	output:
-		# "data/supportive/k562/{res}.tsv"  # humman
-		"data/supportive/mesc/{res}.tsv"  # mouse
+		"data/supportive/k562/{res}.tsv"  # humman
+		# "data/supportive/mesc/{res}.tsv"  # mouse
 	shell:
-		# "src/py/filtering.py human {input} {output}"   # human
-		"src/py/filtering.py mouse {input} {output}"   # mouse
+		"src/py/filtering.py human {input} {output}"   # human
+		# "src/py/filtering.py mouse {input} {output}"   # mouse
 
 rule barh:
 	input:
-		# "data/supportive/k562"  # human
-		"data/supportive/mesc"  # mouse
+		"data/supportive/k562"  # human
+		# "data/supportive/mesc"  # mouse
 	output:
-		# "data/charts/k562/human_barh.png"  # human
-		"data/charts/mesc/mouse_barh.png"  # mouse
+		"data/charts/k562/barh/human_barh.png"  # human
+		# "data/charts/mesc/barh/mouse_barh.png"  # mouse
 	shell:
-	 	# "src/py/barh.py human {input} {output}"  # human
-		"src/py/barh.py mouse {input} {output}"  # mouse
+	 	"src/py/barh.py human {input} {output}"  # human
+		# "src/py/barh.py mouse {input} {output}"  # mouse
 
 rule charts:
 	input:
@@ -143,57 +149,69 @@ rule charts:
 
 rule cwalk:
 	input:
-		# tsvfile = "data/supportive/k562/{res}.tsv",  # human
-		tsvfile = "data/supportive/mesc/{res}.tsv",  # mouse
+		tsvfile = "data/supportive/k562/{res}.tsv",  # human
+		# tsvfile = "data/supportive/mesc/{res}.tsv",  # mouse
 
-		# bedfile = "data/restrictions/DpnII_hg19.bed"  # human
-		bedfile = "data/restrictions/DpnII_mm9.bed"  # mouse
+		bedfile = "data/restrictions/DpnII_hg19.bed"  # human
+		# bedfile = "data/restrictions/DpnII_mm9.bed"  # mouse
 
 	output:
-		# cwalk_txt = "data/cwalks/k562/txt/{res}_cwalks.txt",  # human
-		cwalk_txt = "data/cwalks/mesc/txt/{res}_cwalks.txt",  # mouse
-		# cwalk_bed = "data/cwalks/k562/bed/{res}_cwalks.bed"  # human 
-		cwalk_bed = "data/cwalks/mesc/bed/{res}_cwalks.bed"  # mouse
+		cwalk_txt = "data/cwalks/k562/txt/{res}_cwalks.txt",  # human
+		# cwalk_txt = "data/cwalks/mesc/txt/{res}_cwalks.txt",  # mouse
+		cwalk_bed = "data/cwalks/k562/bed/{res}_cwalks.bed"  # human 
+		# cwalk_bed = "data/cwalks/mesc/bed/{res}_cwalks.bed"  # mouse
 		
 	shell:
-		# "src/py/cwalk.py human {input.bedfile} {input.tsvfile} {output.cwalk_txt} {output.cwalk_bed}"  # human 
-		"src/py/cwalk.py mouse {input.bedfile} {input.tsvfile} {output.cwalk_txt} {output.cwalk_bed}"  # mouse
+		"src/py/cwalk.py human {input.bedfile} {input.tsvfile} {output.cwalk_txt} {output.cwalk_bed}"  # human 
+		# "src/py/cwalk.py mouse {input.bedfile} {input.tsvfile} {output.cwalk_txt} {output.cwalk_bed}"  # mouse
 
 rule analysis:
 	input:
 		"data/cwalks/k562/txt"  # human
 		# "data/cwalks/mesc/txt"  # mouse
 	output:
-		stats_intra = "data/charts/cwalks/k562/hist_all_human.png",  # human
+		stats_intra = "data/charts/cwalks/k562/human_cwalk_hists.png",  # human
 		fractions = "data/charts/cwalks/k562/human_fractions.png",  # human
 		barh_all = "data/charts/cwalks/k562/cwalk_human_barh.png"  # human
-		# stats = "data/analysis/cwalks/mesc/hist_all_mouse.png",  # mouse
+		# stats = "data/analysis/cwalks/mesc/mouse_cwalk_hists.png",  # mouse
 		# fractions = "data/analysis/cwalks/mesc/mouse_fractions.png",  # mouse
 		# barh = "data/analysis/cwalks/mesc/cwalk_mouse_barh.png"  # mouse
 	shell:
-		"src/py/analysis.py human {input} {output.stats_intra} {output.fractions} {output.barh_all}"  # human
-		# "src/py/analysis.py mouse {input} {output.stats} {output.fractions} {output.barh}"  # mouse
+		"src/py/cwalk_analysis.py human {input} {output.stats_intra} {output.fractions} {output.barh_all}"  # human
+		# "src/py/cwalk_analysis.py mouse {input} {output.stats} {output.fractions} {output.barh}"  # mouse
 
 rule directionality:
 	input:
 		"data/cwalks/k562/txt"  # human
 		# "data/cwalks/mesc/txt"  # mouse
 	output:
-		"data/charts/directionality/k562"  # human 
-		# "data/charts/directionality"  # mouse
+		"data/charts/directionality/k562/human_directionality.png"  # human 
+		# "data/charts/directionality/mesc/mouse_directionality.png"  # mouse
 	shell:
 		"src/py/directionality.py human data/cwalks/k562/txt {output}"  # human
-		# "src/py/directionality.py mouse data/cwalks/mesc/txt"  # mouse
+		# "src/py/directionality.py mouse data/cwalks/mesc/txt {output}"  # mouse
 
-rule tad:
+rule TF:
+	input:
+		cwalk = "data/cwalks/k562/txt", 
+		genome = "data/genomes/hg19.chrom.sizes",  
+		chipseq = "data/factors/chip-seq_hg19_K562"
+
+	output:
+		"data/charts/TF/k562/human_TF.png"  
+
+	shell:
+		"src/py/TF_human.py {input.cwalk} {input.genome} {input.chipseq} {output}"
+
+rule TAD:
 	input:
 		cwalk = "data/cwalks/k562/txt",  # human
 		doms = "data/domains/human_doms.txt",  # human
-		genome = "data/genomes/hg19.chrom.sizes",  # human
+		genome = "data/genomes/hg19.chrom.sizes.tsv",  # human
 		rest = "data/restrictions/DpnII_hg19.bed"  # human
 		# cwalk = "data/cwalks/mesc/txt",  # mouse
 		# doms = "data/domains/mouse_doms.txt", # mouse
-		# genome = "data/genomes/mm9.chrom.sizes",  # mouse
+		# genome = "data/genomes/mm9.chrom.sizes.tsv",  # mouse
 		# rest = "data/restrictions/DpnII_mm9.bed"  # mouse
 
 	output:
@@ -213,3 +231,16 @@ rule tad:
 	shell:
 		"src/py/TAD.py human {input.cwalk} {input.doms} {input.genome} {input.rest} \
 		{output.frac_data} {output.frac_random} {output.types} {output.comparision} {output.counts} {output.doms}"
+		# "src/py/TAD.py mouse {input.cwalk} {input.doms} {input.genome} {input.rest} \
+		# {output.frac_data} {output.frac_random} {output.types} {output.comparision} {output.counts} {output.doms}"
+
+
+rule tf:
+	input:
+		cwalk = "data/cwalks/k562/txt", 
+		genome = "data/genomes/hg19.chrom.sizes",  
+		chipseq = "data/factors/chip-seq_hg19_K562"
+	output:
+		"data/charts/TF/mesc/human_TF.png"  
+	shell:
+		"src/py/TF_mouse.py {input.cwalk} {input.genome} {input.chipseq}"
